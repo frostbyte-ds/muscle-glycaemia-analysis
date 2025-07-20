@@ -1,0 +1,13 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data
+.RData
+.RDataTmp
+
+# User-specific files
+.Rproj.user
+
+# Environment variables
+.Renviron

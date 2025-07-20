@@ -1,0 +1,34 @@
+---
+title: "The Independent Role of Muscle Mass in Glycemic Control: A Cross-Sectional Analysis of the NHANES 2011-2018 Data."
+format:
+  pdf:
+    documentclass: report
+    latex-engine: xelatex
+    fontsize: 12pt
+    geometry: "left=2cm, right=2cm, top=3cm, bottom=3cm"
+toc: true
+toc-depth: 3
+include-in-header:
+      text: |
+        \usepackage{amsmath}
+
+editor: visual
+bibliography: References.bib
+csl: acm.csl
+---
+
+# Abstract
+
+# Introduction
+
+# Methodology
+
+# Results
+
+# Discussion
+
+# Conclusions
+
+# Appendix
+
+# References
