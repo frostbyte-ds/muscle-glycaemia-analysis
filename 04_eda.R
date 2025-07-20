@@ -19,7 +19,7 @@ ggplot(imp1, aes(x = Hba1c_perc)) +
 ggplot(imp1, aes(x = Almi)) +
   geom_histogram(aes(y = after_stat(density)), binwidth = 0.5, fill = "lightgreen", color = "black") +
   geom_density(alpha = .2, fill = "#FF6666") +
-  labs(title = "Distribution of Appendicular Lean Mass Index (Almi)", x = "Almi (kg/m^2)", y = "Density") +
+  labs(title = "Distribution of Appendicular Lean Mass Index (Almi)", x = "Almi (kg/m²)", y = "Density") +
   theme_minimal()
 
 # --- Frequency of categorical variables --- #
@@ -63,7 +63,7 @@ ggplot(imp1, aes(x = Gender, y = Hba1c_perc, fill = Gender)) +
 ggplot(imp1, aes(x = Gender, y = Almi, fill = Gender)) +
   geom_boxplot() +
   scale_x_discrete(labels=c("1" = "Male", "2" = "Female")) +
-  labs(title = "ALMI by Sex", x = "Sex", y = "ALMI (kg/m^2)")
+  labs(title = "ALMI by Sex", x = "Sex", y = "ALMI (kg/m²)")
 
 # Box plot of HbA1c by Race/Ethnicity
 ggplot(imp1, aes(x = Race, y = Hba1c_perc, fill = Race)) +
@@ -75,7 +75,7 @@ ggplot(imp1, aes(x = Race, y = Hba1c_perc, fill = Race)) +
 ggplot(imp1, aes(x = Race, y = Almi, fill = Race)) +
   geom_boxplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  labs(title = "ALMI by Race/Ethnicity", x = "Race/Ethnicity", y = "ALMI (kg/m^2)")
+  labs(title = "ALMI by Race/Ethnicity", x = "Race/Ethnicity", y = "ALMI (kg/m²)")
 
 # --- Visually inspect the relationship between ALMI and HbA1c --- #
 
@@ -84,7 +84,7 @@ ggplot(imp1, aes(x = Almi, y = Hba1c_perc)) +
   geom_point(alpha = 0.4) + # Use alpha for transparency to see dense areas
   geom_smooth(method = "lm", color = "red") + # Add a linear model trendline
   labs(title = "HbA1c vs. ALMI",
-       x = "Appendicular Lean Mass Index (kg/m^2)",
+       x = "Appendicular Lean Mass Index (kg/m²)",
        y = "Glycated Hemoglobin (HbA1c %)")
 
 # Scatter plot of HbA1c vs. ALMI by Gender
@@ -92,7 +92,7 @@ ggplot(imp1, aes(x = Almi, y = Hba1c_perc, colour=Gender)) +
   geom_point(alpha = 0.4) + 
   geom_smooth(method = "lm", color = "red") + 
   labs(title = "Glycated Hemoglobin vs. Appendicular Lean Mass Index by Gender",
-       x = "ALMI (kg/m^2)",
+       x = "ALMI (kg/m²)",
        y = "HbA1c (%)")
 
 

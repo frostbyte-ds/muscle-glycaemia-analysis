@@ -184,5 +184,3 @@ logistic_progression.10 <- lapply(design_list, function(design_obj) {
 })
 pooled_logistic_progression.10 <- MIcombine(logistic_progression.10)
 summary(pooled_logistic_progression.10)
-
-

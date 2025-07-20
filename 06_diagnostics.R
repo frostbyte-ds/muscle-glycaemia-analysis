@@ -155,11 +155,11 @@ for (i in 1:10) {
   
 }
 
-# --- Creating lists of mean McFadden Pseudo R^2 values for each pooled model --- #
+# --- Creating lists of mean McFadden Pseudo R² values for each pooled model --- #
 
 # Onset
 
-# Function for finding the mean McFadden Pseudo R^2 from list of models
+# Function for finding the mean McFadden Pseudo R² from list of models
 mean_fit_stat <- function(model_list) {
   # Apply fit.svyglm to each model
   fit_results <- lapply(model_list, fit.svyglm)
@@ -347,7 +347,7 @@ onset.waistcircum.data <- onset.model.fit$survey.design$variables$WaistCircum_cm
 # Create the binned plot of residuals vs. the predictor
 par(mfrow = c(2, 2))
 binnedplot(x = onset.almi.data, y = onset.working.residuals,
-           xlab = "ALMI (kg/m^2)",
+           xlab = "ALMI (kg/m²)",
            ylab = "Average Working Residual",
            main = "Binned Residuals vs. ALMI")
 
@@ -383,7 +383,7 @@ prog.waistcircum.data <- prog.model.fit$survey.design$variables$WaistCircum_cm
 par(mfrow = c(2, 2))
 
 binnedplot(x = prog.almi.data, y = prog.working.residuals,
-           xlab = "ALMI (kg/m^2)",
+           xlab = "ALMI (kg/m²)",
            ylab = "Average Working Residual",
            main = "Binned Residuals vs. ALMI")
 
