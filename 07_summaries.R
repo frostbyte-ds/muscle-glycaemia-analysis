@@ -100,7 +100,7 @@ onset.summary.table <- onset.summary.df %>%
     columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`, `Percentage Change in Coefficient`)
   ) %>%
   
-  # Add a title and subtitle (optional)
+  # Add a title and subtitle 
   tab_header(
     title = "Summary of Logtistic Regression Onset Model Results",
     subtitle = "Relative Risks, Coefficients, and Percentage Changes"
@@ -162,7 +162,7 @@ prog.summary.table <- prog.summary.df %>%
     columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`, `Percentage Change in Coefficient`)
   ) %>%
   
-  # Add a title and subtitle (optional)
+  # Add a title and subtitle 
   tab_header(
     title = "Summary of Logistic Regression Progression Model Results",
     subtitle = "Odds Ratios, Coefficients, and Percentage Changes"
@@ -171,20 +171,41 @@ prog.summary.table <- prog.summary.df %>%
 # Print the table
 prog.summary.table
 
+# --- Summary tables of all model coefficients from the fully adjusted models --- #
+
 # -- VIF values evidencing the suppressor effect seen when moving from onset and progression models 3 to 4 -- #
 
-# Quick check of VIF values show high significant multicollinearity
+# Check of survey adjusted VIF values of progression model 4 show high significant multicollinearity
 # This is not a problem and explains the the suppressor effect that causes the ALMI coefficient
 # becoming negative once waist circumference is added to the model.
-vif(logistic_progression.4$imp1)
 
-# Before waist circumference was added, there is no evidence of severe multicolinearity.
+# Design matrix from the model formula and data
+X.prog.4 <- model.matrix(logistic_progression.4$imp1$formula, data = design_list$imp1$variables)
+# Remove the intercept column
+X.prog.4 <- X.prog.4[, -1]
+# Extract the survey weights from the design object
+weights <- weights(design_list$imp1)
+# Run svyvif
+prog_vif_values.4 <- svyvif(mobj = logistic_progression.4$imp1, X = X.prog.4, w = weights)
+# Print the results
+print(prog_vif_values.4$`Intercept adjusted`)
+
+# Before waist circumference is added, there is no evidence of severe multicolinearity,
+# as seen by the weighted VIF values of progression model 3.
 # This further reinforces the findings.
-vif(logistic_progression.3$imp1)
 
-# --- Forest plots of odds ratios --- #
+# Design matrix from the model formula and data
+X.prog.3 <- model.matrix(logistic_progression.3$imp1$formula, data = design_list$imp1$variables)
+# Remove the intercept column
+X.prog.3 <- X.prog.3[, -1]
+# Run svyvif
+prog_vif_values.3 <- svyvif(mobj = logistic_progression.3$imp1, X = X.prog.3, w = weights)
+# Print the results
+print(prog_vif_values.3$`Intercept adjusted`)
 
-# Useful to visualise coefficient estimates in the final models
+# --- Forest plots and tables of odds ratios from fully adjusted models --- #
+
+# Useful to visualise coefficient estimates
 
 # Onset Model 10
 
@@ -206,7 +227,7 @@ onset.forest.plot.data <- data.frame(
     lower_ci = exp(log_lower_ci),
     upper_ci = exp(log_upper_ci)
   ) %>%
-  # Remove the intercept row, as we don't usually plot it
+  # Remove the intercept row
   filter(variable != "(Intercept)") %>%
   mutate(variable = case_when(
     variable == "Almi" ~ "ALMI",
@@ -219,12 +240,12 @@ onset.forest.plot.data <- data.frame(
     variable == "RaceOther Race - Including Multi-Racial" ~ "Other Race",
     variable == "Bfp_perc" ~ "Body Fat Percentage",
     variable == "WaistCircum_cm" ~ "Waist Circumference",
-    variable == "fam.inc.pov.ratio" ~ "Ratio of Family Income to Poverty",
+    variable == "FamIncPov_Ratio" ~ "Ratio of Family Income to Poverty",
     variable == "Phys" ~ "Physical Activity",
     variable == "Hei" ~ "Healthy Eating Index",
     variable == "Smoking_StatusFormer Smoker" ~ "Former Smoker",
     variable == "Smoking_StatusCurrent Smoker" ~ "Current Smoker",
-    variable == "avg_nightly_sleep" ~ "Average Nightly Sleep",
+    variable == "AvgNightlySleep" ~ "Average Nightly Sleep",
     TRUE ~ variable  # Keep original name if no match
   ))
 
@@ -233,7 +254,7 @@ onset.forest.plot.data <- data.frame(
 
 ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
   # Add the points for the Odds Ratios
-  geom_point(linewidth = 3, color = "darkblue") +
+  geom_point(size = 3, color = "darkblue") +
   
   # Add the lines for the 95% Confidence Intervals
   geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2, color = "darkblue") +
@@ -249,6 +270,51 @@ ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
     x = "Odds Ratio",
     y = "Predictor Variable"
   )
+
+# Also making a table of these values
+
+# Combining CIs into a single string column
+onset.adjusted.ci.combined <- paste0("(", sprintf("%.3f", onset.forest.plot.data$lower_ci), ", ", sprintf("%.3f", onset.forest.plot.data$upper_ci), ")")
+
+# Dataframe for table
+onset.adjusted.summary.df <- onset.forest.plot.data[,c(1,5)] %>%
+  rename(
+    Predictor = variable,
+    `Odds Ratio (OR)` = rr
+  ) %>%
+  mutate(
+    `95% Confidence Interval (OR)` = onset.adjusted.ci.combined
+  )
+
+# Creating table
+onset.adjusted.summary.tbl <- onset.adjusted.summary.df %>%
+  gt() %>%
+  
+  # Format numeric columns nicely
+  fmt_number(
+    columns = c(`Odds Ratio (OR)`),
+    decimals = 3
+  ) %>%
+  
+  
+  # Align columns (right align numbers, left align text)
+  cols_align(
+    align = "left",
+    columns = c(Predictor)
+  ) %>%
+  cols_align(
+    align = "right",
+    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`)
+  ) %>%
+  
+  # Add a title and subtitle 
+  tab_header(
+    title = "Summary of Fully Adjusted Onset Model",
+    subtitle = "Coefficient Estimates and 95% Confidence Intervals"
+  ) 
+
+# Print the table
+onset.adjusted.summary.tbl
 
 # Progression Model 10
 
@@ -283,12 +349,12 @@ prog.forest.plot.data <- data.frame(
     variable == "RaceOther Race - Including Multi-Racial" ~ "Other Race",
     variable == "Bfp_perc" ~ "Body Fat Percentage",
     variable == "WaistCircum_cm" ~ "Waist Circumference",
-    variable == "fam.inc.pov.ratio" ~ "Ratio of Family Income to Poverty",
+    variable == "FamIncPov_Ratio" ~ "Ratio of Family Income to Poverty",
     variable == "Phys" ~ "Physical Activity",
     variable == "Hei" ~ "Healthy Eating Index",
     variable == "Smoking_StatusFormer Smoker" ~ "Former Smoker",
     variable == "Smoking_StatusCurrent Smoker" ~ "Current Smoker",
-    variable == "avg_nightly_sleep" ~ "Average Nightly Sleep",
+    variable == "AvgNightlySleep" ~ "Average Nightly Sleep",
     TRUE ~ variable  # Keep original name if no match
   ))
 
@@ -296,7 +362,7 @@ prog.forest.plot.data <- data.frame(
 
 ggplot(prog.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
   # Add the points for the Odds Ratios
-  geom_point(linewidth = 3, color = "darkblue") +
+  geom_point(size = 3, color = "darkblue") +
   
   # Add the lines for the 95% Confidence Intervals
   geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2, color = "darkblue") +
@@ -312,3 +378,48 @@ ggplot(prog.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
     x = "Odds Ratio",
     y = "Predictor Variable"
   )
+
+# Now making a table for these values
+
+# Combining CIs into a single string column
+prog.adjusted.ci.combined <- paste0("(", sprintf("%.3f", prog.forest.plot.data$lower_ci), ", ", sprintf("%.3f", prog.forest.plot.data$upper_ci), ")")
+
+# Dataframe for table
+prog.adjusted.summary.df <- prog.forest.plot.data[,c(1,5)] %>%
+  rename(
+    Predictor = variable,
+    `Odds Ratio (OR)` = rr
+  ) %>%
+  mutate(
+    `95% Confidence Interval (OR)` = prog.adjusted.ci.combined
+  )
+
+# Creating table
+prog.adjusted.summary.tbl <- prog.adjusted.summary.df %>%
+  gt() %>%
+  
+  # Format numeric columns nicely
+  fmt_number(
+    columns = c(`Odds Ratio (OR)`),
+    decimals = 3
+  ) %>%
+  
+  
+  # Align columns (right align numbers, left align text)
+  cols_align(
+    align = "left",
+    columns = c(Predictor)
+  ) %>%
+  cols_align(
+    align = "right",
+    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`)
+  ) %>%
+  
+  # Add a title and subtitle 
+  tab_header(
+    title = "Summary of Fully Adjusted Progression Model",
+    subtitle = "Coefficient Estimates and 95% Confidence Intervals"
+  ) 
+
+# Print the table
+prog.adjusted.summary.tbl

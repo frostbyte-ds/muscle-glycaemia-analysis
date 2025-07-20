@@ -409,15 +409,79 @@ par(mfrow = c(1, 1))
 
 # ---- Checking for influential points ---- #
 
+# Using survey weighted cook's distance plots
+
 # Onset
-influenceIndexPlot(logistic_onset.4$imp1)
 
-# A few outliers but nothing too influential
+# Onset model 4 shows most cooks distances cluster below 20
+# There are a cloud of points higher than 20 and one that is much higher at around 100
+# It is useful to investigate these observations and how the model performs without them
+# We do not want conclusions to depend on a small amount of influential points
 
-# Progression
-influenceIndexPlot(logistic_progression.4$imp1)
+# Finding and plotting cooks distances for onset model 4 on imputation 1
+# Crucially, the results are very similar on other impuations, so only considering impuation 1 here is okay
+onset.cooks <- svyCooksD(logistic_onset.4$imp1, doplot=TRUE)
+# Saving indices of those points with the top 1% cooks distance
+onset_cooks_threshold <- quantile(onset.cooks, probs = 0.99)
+onset_influential_indices <- which(onset.cooks > onset_cooks_threshold)
 
-# Lots of outliers but nothing influential enough to be a concern
+# Creating a data frame with these influential observations
+# Nothing immediately stands out with these
+onset_influential_obs <- design_list$imp1$variables[onset_influential_indices,]
+onset_influential_obs$CooksD <- onset.cooks[onset_influential_indices]
 
+# Seek to refit the model without these points
 
+# Create a new data frame by EXCLUDING the influential rows
+onset_reduced_data <- design_list$imp1$variables[-onset_influential_indices, ]
 
+# Create a new survey design object with this reduced dataset
+# Make sure to use the same formula for strata, id, and weights as your original design
+onset_reduced_design <- svydesign(id = ~PSU, 
+                            strata = ~Strata, 
+                            weights = ~SurvWeight,
+                            nest = TRUE,
+                            data = onset_reduced_data)
+
+# Refit the model using the reduced design object
+onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm,
+                                    design = onset_reduced_design, 
+                                    family = quasibinomial)
+
+# Almi coefficient is still not significant
+# This means that removing influential points does not change findings
+summary(onset_without_influential)
+
+# Now checking this for the progression model
+
+prog.cooks <- svyCooksD(logistic_progression.4$imp1, doplot=TRUE)
+# Saving indices of those points with the top 1% cooks distance
+prog_cooks_threshold <- quantile(prog.cooks, probs = 0.99)
+prog_influential_indices <- which(prog.cooks > prog_cooks_threshold)
+
+# Creating a data frame with these influential observations
+# Nothing immediately stands out with these
+prog_influential_obs <- design_list$imp1$variables[prog_influential_indices,]
+prog_influential_obs$CooksD <- prog.cooks[prog_influential_indices]
+
+# Seek to refit the model without these points
+
+# Create a new data frame by EXCLUDING the influential rows
+prog_reduced_data <- design_list$imp1$variables[-prog_influential_indices, ]
+
+# Create a new survey design object with this reduced dataset
+# Make sure to use the same formula for strata, id, and weights as your original design
+prog_reduced_design <- svydesign(id = ~PSU, 
+                                  strata = ~Strata, 
+                                  weights = ~SurvWeight,
+                                  nest = TRUE,
+                                  data = prog_reduced_data)
+
+# Refit the model using the reduced design object
+prog_without_influential <- svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm,
+                                    design = prog_reduced_design, 
+                                    family = quasibinomial)
+
+# Once again, nothing has significantly changed.
+# Can conclude that findings are robust and not dependant on influential outliers.
+summary(prog_without_influential)
