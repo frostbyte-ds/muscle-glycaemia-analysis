@@ -38,7 +38,7 @@ To reproduce the analysis, please follow these steps:
 -   `Dissertation.Rproj`: The RStudio project file. Open this to get started.
 -   `Dissertation.qmd`: The Quarto source file for the final dissertation write-up.
 -   `README.md`: This file, explaining the project.
--   `references.bib`: The bibliography file for all citations.
+-   `References.bib`: The bibliography file for all citations.
 -   `.gitignore`: Specifies which files and folders to exclude from version control.
 -   `scripts/`: A folder containing all the R scripts for the analysis, numbered in the order they should be run.
 
