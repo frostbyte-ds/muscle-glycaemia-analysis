@@ -5,7 +5,7 @@
 # Survey design list 
 design_list <- lapply(imputed_1118, function(dataset) {
   svydesign(
-    id = ~PSU,
+    ids = ~PSU,
     strata = ~Strata,
     weights = ~SurvWeight,
     nest = TRUE,

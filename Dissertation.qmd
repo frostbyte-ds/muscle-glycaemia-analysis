@@ -1,5 +1,6 @@
 ---
-title: "The Independent Role of Muscle Mass in Glycemic Control: A Cross-Sectional Analysis of the NHANES 2011-2018 Data."
+title: "The Independent and Stage-Specific Role of Skeletal Muscle in Glycaemic Control: A Cross-Sectional Analysis of the NHANES 2011-2018 Data."
+number-sections: true
 format:
   pdf:
     documentclass: report
@@ -23,6 +24,144 @@ csl: acm.csl
 
 # Methodology
 
+The analytical methods used to investigate the associations of skeletal muscle with glycaemic control involved many sequential stages. The first task was the collection of data from the National Health and Nutrition Examination Survey (NHANES) @nhanes_2024. Following data collection, meticulous creation and harmonisation of various predictor, outcome, and confounding variables was key. Missing data was appropriately handled using a robust multiple imputation strategy, after which, an iterative modelling journey was conducted to identify the most appropriate statistical models for the goal.
+
+The chosen models were thoroughly diagnosed to ensure they were well selected and that inferences made using them were accurate. Once the models were known to be well defined, their coefficients were extracted and examined, they were used to make predictions, and their predictive accuracy was assessed.
+
+The following sections will describe each stage of the methodological journey in detail, aiming to instil confidence in, and understanding of, the analysis and findings.
+
+## Data Source: The National Health and Nutrition Examination Survey (NHANES)
+
+The data used for all analyses are from the National Health and Nutrition Examination Survey (NHANES). NHANES is a large-scale health and nutrition examination program conducted by the National Center for Health Statistics - a subsidiary of the CDC.
+
+The program began in 1959 under a different name - The National Health Examination Survey @nhanes_doc_2021. It was founded to satisfy the National Health Survey Act of 1956, which authorised ongoing surveys “to secure accurate and current statistical information on the amount, distribution, and effects of illness and disability in the United States”.
+
+The overarching goals of NHANES are to deliver reliable data on the prevalence of major health conditions and their risk factors, monitor changes over time in diseases, behaviours, and environmental exposures, identify new and emerging public health issues, and preserve a nationally representative snapshot of the population’s health and nutritional well-being @nhanes_doc_2021.
+
+The manner in which NHANES collects data is from a combination of personal interviews and questionnaires, standardised health examinations, and laboratory tests. Data such as demographics, socio-economic status, and health behaviours such as smoking history, alcohol consumption, and physical activity were recorded through interviews. Examinations, all performed in Mobile Examination Centres (MECs), were responsible for recording anthropometric data and body composition data from dual-energy X-ray absorptiometry (DXA) - the source of the primary muscle mass predictor. Laboratory tests involved the collection of biological specimens such as blood and urine. This was the source of the primary glycaemic control outcome variable.
+
+Approximately 5,000 people take part in NHANES each year, with the data becoming available to the public in biannual cycles. Data from the following cycles have been utilised in this analysis: 2011-12, 2013-14, 2015-16, and 2017-18.
+
+It is common that the format of the interview questionnaires evolves over different cycles of NHANES. Particular questions were not of the same form for every cycle. For this reason, a high level of care had to be taken when merging data from each cycle to create the final comprehensive dataset. Techniques such as variable harmonisation and feature engineering were key to ensure the quality of data was upheld and meaningful predictors were included in the models. Details of this process can be seen in Section \ref{process}.
+
+Crucial elements of NHANES that needed to be considered were its cross-sectional nature and complex, multi-stage probability sampling design @nhanes_design_2018. NHANES is a cross-sectional study, meaning that data from each participant is collected only once at a specific point in time. As a result, analysis of associations between variables is permitted, but inferences of causality are not valid. In addition to its cross-sectional structure, considering the sample design in the analysis allowed for suitable estimation of variance such that statistics are representative of the whole U.S. civilian non-institutionalized population. The key features of the NHANES design are as follows:
+
+1.  **Strata (`SDMVSTRA`):** These are groups of Primary Sampling Units (PSUs) that are similar in terms of geography and demographic characteristics, often defined using state-level health indices. Stratification increases the precision of the final estimates.
+2.  **Primary Sampling Units (`SDMVPSU`):** These are the clusters, typically counties or groups of counties, sampled within each stratum. PSUs are selected with probabilities proportionate to their size to ensure that subgroups of public health interest are adequately represented. Accounting for clustering is essential for calculating correct standard errors, as individuals within a cluster may be more similar to each other than to the general population.
+3.  **Sample Weights (`WTMEC2YR`):** Each participant is assigned a sample weight that can be thought of as counts of the number of individuals that they represent. A participant's sample weight accounts for their unequal probability of selection (due to oversampling of certain subgroups), as well as adjustments for non-response to the interview and the Mobile Examination Center (MEC) exam (more on this later).
+
+As per the NHANES analytic guidelines @nhanes_design_2018, the MEC exam weight (WTMEC2YR) was used for all analyses. These are the weights that were used for "the least common denominator", meaning the "variable of interest that was collected on the smallest number of respondents". The key outcome variables (e.g., HbA1c) and predictor variables (e.g., ALMI from DXA scans) were collected during the physical examination at the MEC. The subset of individuals that participated in the MEC exam was smaller than the group that were interviewed, making the MEC weights the appropriate choice.
+
+All statistical modelling was carried out using the `survey` package in R. This package provides functions that enable a variety of modelling techniques to be used in conjunction with "multi-stage stratified, cluster-sampled, unequally weighted survey samples" @lumley_2023. More detail of how this package was leveraged can be seen in Section \[\].
+
+All NHANES data are publicly available on the NCHS website and have been de-identified to maintain the anonymity of the participants. The data can be found alongside comprehensive documentation, including detailed codebooks, survey procedure manuals, and analytical guidelines, the use of which was paramount in ensuring results are statistically valid.
+
+## Variable Selection and Creation {#vars}
+
+As previously mentioned, a thorough process of variable selection, creation, and harmonisation across survey cycles was key in this analysis. Scientifically appropriate outcome, predictor, and confounding variables were chosen to successfully isolate the independent role of muscle mass in glycaemic control.
+
+### Outcome variable: Glycaemic Control
+
+The outcome variable chosen to represent glycaemic control was glycated haemoglobin (HbA1c) @diabetes_uk_2017.
+
+Although the classification of diabetes has historically relied on single-point measures such as fasting plasma glucose (FPG), clinical guidelines have evolved. The recommended method across the globe is now HbA1c, which provides a more stable and comprehensive assessment by measuring average blood glucose levels over the last 2-3 months @iec_2009.
+
+There are many advantages of using HbA1c over single-point measures such as FPG, some of which are as follows:
+
+-   FPG levels are subject to a high degree of day-to-day variability due to a variety of factors including acute stress, illness, or changes in exercise @iec_2009. Such variability is not a concern with HbA1c, making it a more stable and reliable biomarker.
+
+-   HbA1c can be comparable to roughly thousands of individual measurements of FPG, also capturing postprandial spikes in glucose that are often missed by a simple fasting test but are significant contributors to overall glycaemic burden @hb_pros_2011.
+
+-   No fasting is required for retrieving HbA1c measurements, allowing for substantially simpler data collection for large-scale surveys such as NHANES. This also reduces the burden on participants and eliminates the chance of misclassification due to patients not adhering to fasting protocols.
+
+HbA1c measurement has been standardised worldwide through efforts like the National Glycohemoglobin Standardization Program (NGSP), allowing results from various labs and studies to be comparable (<https://ngsp.org/>).
+
+To test the hypothesis that the effect of skeletal muscle on glycaemic control is stage-specific, the continuous HbA1c variable was dichotomized to create two distinct binary outcomes. This approach allows for the separate modelling of the factors associated with the initial onset of dysregulation versus the progression to clinical disease.
+
+The first outcome, representing the "Onset" of elevated risk, was defined using the American Diabetes Association (ADA) threshold for prediabetes @ada_2023. Individuals with HbA1c $<$ 5.7% were classified as "normal", while those with values $\geq$ 5.7% were classified as "elevated".
+
+The second outcome, representing the "Progression" to diabetes, was defined using the ADA's diagnostic threshold of 6.5% HbA1c. This separated individuals below the diabetic threshold ($<$ 6.5%) from those with clinical diabetes ($\geq$ 6.5%).
+
+This dual-outcome strategy directly informs the use of two separate binary classification models in the subsequent analysis, allowing for a nuanced investigation of the stage-specific effects of muscle mass.
+
+### Primary Predictor Variable: Skeletal Muscle Mass
+
+Skeletal muscle is the largest organ in the human body by mass, consisting of around 40% of total body weight of a young male @merz_thurmond_2020. Physiologically, it the primary site for postprandial glucose disposal, accounting for approximately over 80% of post-meal glucose uptake from the blood. Consequently, insulin sensitivity within skeletal muscle is a key determinant of whole-body glucose homeostasis; when this process is impaired, it becomes a primary driver of whole-body insulin resistance.
+
+Given its central role, further investigating the protective effect of skeletal muscle in the context of diabetes is of high clinical importance. This research moves beyond asking *if* skeletal muscle is protective and instead *when* its effect is most critical. By modelling two distinct clinical thresholds, this study seeks to provide novel evidence that the independent metabolic benefit of skeletal muscle is stage-specific.
+
+The specific metric used as the primary predictor and a proxy for skeletal muscle in this study is appendicular lean mass index (ALMI). This refers the appendicular lean mass (ALM) - muscle mass in the limbs - scaled by height squared. Choosing to only consider muscle in the limbs is key as it allows for greater specificity for skeletal muscle tissue @tinsley_heymsfield_2024. Including whole body lean mass would introduce muscle in the central organs such as the heart, lungs, and liver. This would result in an inflated measure of skeletal muscle that is not representative of the muscle relevant to glucose uptake or metabolism.
+
+To account for inherent differences in body size, ALM was normalized by height squared to create the Appendicular Lean Mass Index (ALMI). This normalization is crucial, as a taller individual will naturally possess greater appendicular lean mass than a shorter individual, even with a similar physique. Indexing to height squared - a method analogous to the calculation of the Body Mass Index (BMI) - allows for valid and meaningful comparisons of muscle mass between individuals of different statures @scaling_2021.
+
+ALMI is the international standard measurement used for diagnosing sarcopenia, demonstrating its trusted clinical usage @sarco_2022.
+
+ALMI is not directly reported by NHANES. However, the necessary data are available: lean mass measurements (excluding bone mass) for each limb obtained using DXA, along with height measurements. After converting lean mass from grams to kilograms and height from centimetres to metres, these variables were combined as follows to calculate ALMI:
+
+\begin{center}
+
+$\text{ALMI} \,(\mathrm{kg}/\mathrm{m}^2) = (\text{Left leg lean mass} \,(\mathrm{kg}) + \text{Right leg lean mass} \,(\mathrm{kg}) + \text{Left arm lean mass} \,(\mathrm{kg}) + \text{Right arm lean mass} \,(\mathrm{kg})) \,/ \,\text{Height}^2 \,(\mathrm{m})$
+
+\end{center}
+
+This conversion was done after multiple imputation, using the appropriate variables in each imputed dataset. Doing this prior to imputation would not have been optimal. The multiple imputation algorithm works best when it has the most possible information to learn from. Combining the lean mass measurements of all four limbs into ALMI prematurely would reduce the information that the imputation is able to learn from, likely reducing its accuracy. In addition, calculating ALMI before imputation would result in the loss of information. This would be due to a missing value in any of the four limb measurements, or height, resulting in NA when combined. Forming the ALMI variable after the imputation algorithm is key in maintaining the highest possible accuracy and size of the final dataset.
+
+### Selection of Simple Confounding Variables {#simple}
+
+To isolate the independent effect of skeletal muscle on glycaemic control it is essential to control for potential confounding variables. Failure to do so can lead to biased estimates and spurious correlations. Confounding variables are those that are associated with both the outcome and primary predictor, but are not on the causal pathway between them @confounding_2008.
+
+Choosing what confounding variables to include in the models was done based on the backing of the surrounding literature. Some confounders were simple to obtain and required no extensive harmonisation. These variables, and the reasons for including them, are outlined in this section. See Section \ref{process} for details on the inclusion of those variables that required substantial pre-processing.
+
+Key demographic confounders that are included in the analysis are age, gender, and race. Age has an inverse relationship with muscle mass @demo_muscle_2010. Typically peaking in young adulthood, skeletal muscle mass naturally declines with age. This is what is known as sarcopenia. Body composition, including skeletal muscle, differs greatly between males and females. These difference also extend to people of different ethic backgrounds.
+
+Furthermore, increasing age is strongly associated with worsening glycaemic control due to insulin sensitivity decreasing with age @demo_gluc_2005. Sex hormones have been shown to have a strong influence on insulin sensitivity, resulting in differing risk profiles for metabolic disease between men and women, with women appearing to have lower insulin resistance than men @geer_shen_2009. Finally, there is a highly documented disparity in the prevalence of type 2 diabetes between those of differing ethnicities @demo_gluc_2005.
+
+These reasons provide strong justification for the inclusion of age, gender, and race as confounding variables in the statistical models. Each variable is readily available in each cycle of NHANES and was directly extracted to be included in the final dataset. The same was done with key body composition confounders, body fat percentage (BFP) and waist circumference (WC).
+
+To comprehensively account for the confounding effects of adiposity, both total BFP and WC were included in the models. As demonstrated by research directly comparing these metrics, both are significant predictors of type 2 diabetes, with central adiposity often showing a particularly strong association @associations_2019. Therefore, including both is essential to fully disentangle their effects from the independent contribution of muscle mass.
+
+Another confounding variable that was considered in the analysis was diet quality due to it being a primary determinant of glycaemic control and strong association with skeletal muscle mass in the body @diet_gluc_2020 @diet_muscle_2023. NHANES collects substantial data regarding diet in the form of "24-hour dietary recalls" @dietary_recall. Since the survey cycle in 2002-2003, each participant has completed two 24-hour dietary recall, with the second between 3 and 10 days of the first. Each dietary recall required information on the individual foods that were consumed and total nutrient intakes.
+
+There is no easy way to manually leverage the complex NHANES dietary recall data to engineer a single variable to include in the models, therefore, the R package `heiscore` was used to seamlessly extract what is known as Healthy Eating Index (HEI) scores for each participant of the required NHANES survey cycles. The Healthy Eating Index (HEI) is a tool used to evaluate diet quality by measuring how closely a group of foods adhere to the core recommendations and dietary patterns outlined in the Dietary Guidelines for Americans @usda_2023. A HEI score is a number from 1 to 100, with numbers closer to 100 indicating a healthier diet.
+
+The final simple confounding variable that has been included in the statistical models is the ratio of family income to poverty (PIR), which is used as a measure of socio-economic status (SES). SES is a well-established social determinant of health, strongly associated with health behaviours, access to healthcare, and the risk of developing type 2 diabetes @ses_gluc_2024 @ses_muscle_2020. It is multifaceted construct that is frequently utilised in epidemiological research through indicators such as educational attainment and occupational status @pir_2014. These indicators may be problematic by attaching excessive significance to education and employment, while failing to acknowledge access to and affordability of healthcare.
+
+This concern is rectified by the use of PIR, which represents household income relative to the appropriate poverty line. The poverty line or threshold is the minimum income level deemed necessary for a family to meet basic needs like food, housing, and clothing, and family income is defined as the total income of all members of a given household or family. A PIR of 1 means the family's income is equal to their poverty threshold, less than one implies they are economically disadvantaged, and greater than one implies they are financially secure, with higher magnitudes of PIR indicating further distance from the poverty line.
+
+### Data Processing and Harmonisation of Lifestyle Confounders {#process}
+
+Section \ref{simple} has outlined the selection of the confounding variables that did not require significant adjustment to be compiled in the final dataset. As previously mentioned, some confounders did require extensive data processing due to reasons such as structural missingness as a result of survey skip patterns and changes to interview structure over different survey cycles.
+
+This section will provide justification for why these remaining confounders were chosen, and it will detail the meticulous wrangling that was needed to form the final comprehensive dataset prior to multiple imputation, including the harmonisation of these more complex confounders over each survey cycle of NHANES, and the techniques used to handle structural missingness. All the required R code for these tasks can be seen in Section \ref{procCode}.
+
+The initial task was to combine each relevant dataset from each cycle of NHANES from 2011 to 2018, keeping only the variables required for the analysis. These were each of the aforementioned variables in Section \ref{vars}, an individual ID, and the variables that were needed to engineer lifestyle confounders of physical activity, alcohol consumption, cigarette smoking, and daily hours of sleep. The details of such feature engineering will be outlined later in this section.
+
+Each required dataset within NHANES was obtained using the `nhanesA` package in R. This package provides a simple function `nhanes` which was used to load the relevant data from each survey cycle into R. This process can be seen in Section \ref{nhanes}, along with the use of the `score` function from the aforementioned `heiscore` package to obtain the HEI scores for each participant.
+
+Inner join was used, with the ID variable as they key, to combine each dataset within each survey cycle using a custom function `multi_inner_join`. This function took a list of data frames as an input and outputted the result of combining them with inner join. The use of inner join was crucial in creating a valid analytical sample prior to imputation. Not all individuals that participated in the interview stage also took part in the examination phase and vice versa. Merging datasets with an inner join ensures that only those who took part in both the interview and examination stages are in the final dataset. Failure to do so would result in imputing data that was not missing at random, resulting in a significantly larger but severely biased dataset. Each survey cycle's combined data frame was given a new identifier column to label which survey cycle its observations were from. This variable was key in the variable harmonisation phase.
+
+Next, the complete merged datasets for each survey cycle were simplified by removing every variable within them that was not required. Following this, a new large dataset was formed by binding each survey cycle's dataset by row. This dataset contained 12178 rows comprising of all participants that took part in both the interview and examination in one of any NHANES survey from 2011 to 2018. Due to the cross-sectional nature of NHANES, no individual took part in multiple survey cycles.
+
+Following the creation of this large dataset was the handling of structural missingness and harmonisation of lifestyle confounders, the first of which being physical activity, which is well-known to be strongly associated with skeletal muscle mass and glycaemic control @phys_gluc_2018 @phys_musc_2023. The desired physical activity variable for modelling was one that measured the combined total minutes of "moderate" and "vigorous" recreational physical activity in a typical day (definitions of how NHANES defines "moderate and "vigorous" physical activity can be seen in the survey codebooks).
+
+The physical activity questionnaires in NHANES contain questions that first ask whether the participant takes part in any "moderate" or "vigorous" activity (`PAQ665/PAQ650`). If the participant gives the answer "Yes", they will also be asked how many minutes of it they carry out in a typical day (`PAD675/PAD660`). This structure introduces structural missingness. Any time a participant answered "No" to the initial gatekeeper question, they were not asked the follow up question, resulting in the skipped response being coded as NA in the dataset. Of course, this data is not missing. An initial answer of "No" should correspond to 0 minutes of the appropriate level of physical activity in a typical day. This concern was appropriately handled as seen in Section \ref{procCode}. Very few individuals also responded with "Don't know" when asked the follow-up question regarding minutes of activity. This was coded as 9999 in the dataset, and was handled by setting 9999 values to NA so that they could be imputed. Handling the outlined structural missingness resulted in missing data for `PAD675` and `PAD660` reducing from 69% and 56% respectively, to 0.04% and 0.09%, emphasising the importance of this data processing. The final physical activity variable was formed by summing `PAD675` and `PAD660`.
+
+The next lifestyle confounder to be included was alcohol consumption due to prior evidence showing that alcohol affects both muscle composition and glycaemic regulation @alc_musc_2001 @alc_gluc_2004. Alcohol misuse has been shown to have a direct negative relationship with skeletal muscle, however, moderate alcohol consumption is associated with a reduction in diabetes incidence. The latter finding will be highlighted in this analysis.
+
+The alcohol consumption questionnaire from the NHANES interview stage maintained the same structure for the relevant questions from 2011 to 2016, but underwent alterations for the 2017-2018 cycle. This necessitated a complex multi-stage harmonisation process that resulted in a single, robust 4-level categorical variable (`Alcohol_Status`) distinguishing between those that had never been drinkers, those who are former drinkers, moderate drinkers, and heavy drinkers. Thresholds outlined by the U.S. government's "Dietary Guidelines for Americans" were used to classify drinkers as "moderate" or "heavy" @alcohol_2024.
+
+Differentiating those who have never consumed alcohol and those who are former drinkers is key in handling the "sick-quitter" effect. The sick-quitter effect refers to individuals who stop drinking alcohol because of health problems @sick_quitter_2024. Although they are often categorised as non-drinkers in health data, they may have already experienced alcohol-related harm before quitting. When studies compare drinkers to non-drinkers and the non-drinker group includes former drinkers with existing health issues, it can distort the results. This may make the risks of alcohol seem lower than they are, or even suggest that light drinking offers health benefits. This distortion is known as the sick-quitter effect, and the construction of the `Alcohol_Status` variable handles this appropriately.
+
+The harmonisation process involved the following steps:
+
+1.  Harmonisation of Drinking Frequency:
+
+    This stage involved creating a consistent measure of how often participants drunk. For the 2011-2016 cycles, this was recorded as a numerical variable directly measuring the number of drinking days in the past year (`ALQ120Q`). However, for the 2017-2018 cycle, this was replaced with a categorical variable (`ALQ121`). To create a single, continuous variable that was comparable across all cycles 2011-2018 (`Drinking_Days_Per_Year)`, the categorical `ALQ121` was converted into an approximate number of days per year (e.g., "Every day" was converted to 365, "Once a week" to 52, etc.). The new `Drinking_Days_Per_Year` variable was simply the same as `ALQ120Q` for the responses from 2011-2016. Also in this stage, structural missingness was handled appropriately. Codes for "Refused" and "Don't know" responses were assigned to NA across all cycles to be imputed.
+
+2.  Cleaning of Drinking Quantity
+
+    The variable for the quantity of drinks per drinking day (`ALQ130`) was cleaned to handle "Refused" and "Don't know" codes and structural missingness.
+
 # Results
 
 # Discussion
@@ -30,5 +169,410 @@ csl: acm.csl
 # Conclusions
 
 # Appendix
+
+## Loading packages
+
+\scriptsize
+
+```{r, eval=FALSE}
+# ------------------------------------------ #
+# Loading required packages for the analysis
+# ------------------------------------------ #
+
+library(nhanesA) # For NHANES data
+library(survey) # For incorporation of survey design elements
+library(systemfonts) # For fonts
+library(showtext) # Also for fonts
+library(Amelia) # For multiple imputation
+library(parallel) # For parallel processing
+library(mice) # For more imputation tools
+library(mitools) # For even MORE imputation tools
+library(svydiags) # For survey model diagnostics
+library(poliscidata) # For fit.svyglm function
+library(tidyverse) # For tidyverse functions
+library(heiscore) # For HEI scores
+library(car) # For useful analysis tools
+library(svydiags) # For diagnostics of svyglms
+library(miceadds) # For micombine.F
+library(gt) # For tables
+library(arm) # For binned residual plots
+library(gridExtra) # For presentation of visualisations
+library(WeightedROC) # For survey weighted ROC and AUC calculations 
+```
+
+## Loading NHANES data {#nhanes}
+
+```{r, eval=FALSE}
+# -------------------------------------- #
+# Loading the necessary data from NHANES
+# -------------------------------------- #
+
+# 2011-12
+
+# Demographics
+demo1112 <-nhanes("DEMO_G")
+# Body Measures (for height and weight to calculate BMI)
+body1112 <- nhanes("BMX_G")
+# Glycohemoglobin (HbA1c)
+HbA1c1112 <- nhanes("GHB_G")
+# DXA data (for appendicular lean mass)
+dexa1112 <- nhanes("DXX_G")
+# Physical Activity
+phys1112 <- nhanes("PAQ_G")
+# Alcohol consumption
+alcohol1112 <- nhanes("ALQ_G")
+# Cigarette smoking data
+smoking1112 <- nhanes("SMQ_G")
+# Healthy Eating Score
+hei1112 <- score(method = "simple", years = "1112", component = "total score")
+# Sleep data
+sleep1112 <- nhanes("SLQ_G")
+
+# 2013-14
+
+demo1314 <-nhanes("DEMO_H")
+body1314 <- nhanes("BMX_H")
+HbA1c1314 <- nhanes("GHB_H")
+dexa1314 <- nhanes("DXX_H")
+phys1314 <- nhanes("PAQ_H")
+alcohol1314 <- nhanes("ALQ_H")
+smoking1314 <- nhanes("SMQ_H")
+hei1314 <- score(method = "simple", years = "1314", component = "total score")
+sleep1314 <- nhanes("SLQ_H")
+
+# 2015-16
+
+demo1516 <-nhanes("DEMO_I")
+body1516 <- nhanes("BMX_I")
+HbA1c1516 <- nhanes("GHB_I")
+dexa1516 <- nhanes("DXX_I")
+phys1516 <- nhanes("PAQ_I")
+alcohol1516 <- nhanes("ALQ_I")
+smoking1516 <- nhanes("SMQ_I")
+hei1516 <- score(method = "simple", years = "1516", component = "total score")
+sleep1516 <- nhanes("SLQ_I")
+
+# 2017-18
+
+# Demographics
+demo1718 <-nhanes("DEMO_J")
+body1718 <- nhanes("BMX_J")
+HbA1c1718 <- nhanes("GHB_J")
+dexa1718 <- nhanes("DXX_J")
+phys1718 <- nhanes("PAQ_J")
+alcohol1718 <- nhanes("ALQ_J")
+smoking1718 <- nhanes("SMQ_J")
+hei1718 <- score(method = "simple", years = "1718", component = "total score")
+sleep1718 <- nhanes("SLQ_J")
+```
+
+## Data processing {#procCode}
+
+```{r, eval=FALSE}
+# ----------------------------------------------------------------------------------------------- #
+# Combining the various survey cycles and carrying feature engineering and variable harminosation
+# ----------------------------------------------------------------------------------------------- #
+
+# Helper function for inner join of multiple datasets
+multi_inner_join <- function(dfs) {
+  reduce(dfs, ~inner_join(.x, .y, by = "SEQN"))
+}
+
+# Create lists of datasets for each time period
+dfs1112 <- list(demo1112, body1112, HbA1c1112, dexa1112, phys1112, alcohol1112,
+                smoking1112, hei1112, sleep1112)
+
+dfs1314 <- list(demo1314, body1314, HbA1c1314, dexa1314, phys1314, alcohol1314,
+                smoking1314, hei1314, sleep1314)
+
+dfs1516 <- list(demo1516, body1516, HbA1c1516, dexa1516, phys1516, alcohol1516,
+                smoking1516, hei1516, sleep1516)
+
+dfs1718 <- list(demo1718, body1718, HbA1c1718, dexa1718, phys1718, alcohol1718,
+                smoking1718, hei1718, sleep1718)
+
+# Applying function and adding variable denoting time period to aid with variable harmonisation
+xsec.data1112 <- multi_inner_join(dfs1112) %>%
+  mutate(SurveyCycle = "2011-2012")
+xsec.data1314 <- multi_inner_join(dfs1314) %>%
+  mutate(SurveyCycle = "2013-2014")
+xsec.data1516 <- multi_inner_join(dfs1516) %>%
+  mutate(SurveyCycle = "2015-2016")
+xsec.data1718 <- multi_inner_join(dfs1718) %>%
+  mutate(SurveyCycle = "2017-2018")
+
+# Array of variables needed from each time period
+vars1112 <- c(
+  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",  # Survey structure and demographics
+  "BMXHT", "BMXWAIST",  # Body measures
+  "LBXGH",  # HbA1c
+  "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",  # Lean muscle in the limbs
+  "PAQ665", "PAD675", "PAQ650", "PAD660",  # Physical activity
+  "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",  # Alcohol consumption
+  "SMQ040", "SMQ020",  # Smoking habits
+  "score",  # Healthy Eating Index score
+  "SLD010H",  # Sleep 
+  "SurveyCycle"  # Marker for survey years
+)
+
+vars1314 <- c(
+  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",
+  "BMXHT", "BMXWAIST",
+  "LBXGH",
+  "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",
+  "PAQ665", "PAD675", "PAQ650", "PAD660",
+  "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",
+  "SMQ040", "SMQ020",
+  "score",
+  "SLD010H",
+  "SurveyCycle"
+)
+
+vars1516 <- c(
+  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",
+  "BMXHT", "BMXWAIST",
+  "LBXGH",
+  "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",
+  "PAQ665", "PAD675", "PAQ650", "PAD660",
+  "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",
+  "SMQ040", "SMQ020",
+  "score",
+  "SLD012",
+  "SurveyCycle"
+)
+
+vars1718 <- c(
+  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",
+  "BMXHT", "BMXWAIST",
+  "LBXGH",
+  "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",
+  "PAQ665", "PAD675", "PAQ650", "PAD660",
+  "ALQ121", "ALQ130", "ALQ111",
+  "SMQ040", "SMQ020",
+  "score",
+  "SLD012", "SLD013",
+  "SurveyCycle"
+)
+
+# Extracting them for each time period
+imputation_vars1112 <- xsec.data1112 %>% select(all_of(vars1112))
+imputation_vars1314 <- xsec.data1314 %>% select(all_of(vars1314))
+imputation_vars1516 <- xsec.data1516 %>% select(all_of(vars1516))
+imputation_vars1718 <- xsec.data1718 %>% select(all_of(vars1718))
+
+# Combining
+imputation_vars_full <- bind_rows(
+  imputation_vars1112,
+  imputation_vars1314,
+  imputation_vars1516,
+  imputation_vars1718
+)
+
+# Need to set PAD675 to 0 where PAQ665 is "No" AND set PAD660 to 0 where PAQ650 is "No".
+# Also need to set PAD675 and PAD660 to NA whenever they are 9999 
+
+# Proportion missing of minutes of moderate and vigorous physical activity
+sum(is.na(imputation_vars_full$PAD660))/nrow(imputation_vars_full) # 69% missing
+sum(is.na(imputation_vars_full$PAD675))/nrow(imputation_vars_full) # 56% missing
+
+imputation_vars_full <- imputation_vars_full %>%
+  mutate(
+    # For Vigorous Activity (PAD660)
+    # If PAQ650 is 2 ('No') AND PAD660 is currently NA, change it to 0.
+    # Otherwise, leave it as it is.
+    PAD660 = ifelse(PAQ650 == "No" & is.na(PAD660), 0, PAD660),
+    
+    # Assigning NA for "Don't know" code
+    PAD660 = ifelse(PAD660 == 9999, NA_real_, PAD660),
+    
+    # For Moderate Activity (PAD675)
+    # If PAQ665 is 2 ('No') AND PAD675 is currently NA, change it to 0.
+    # Otherwise, leave it as it is.
+    PAD675 = ifelse(PAQ665 == "No" & is.na(PAD675), 0, PAD675),
+    
+    # Assigning NA for "Don't know" code 
+    PAD675 = ifelse(PAD675 == 9999, NA_real_, PAD675)
+  ) %>%
+  select(-c(PAQ665, PAQ650))
+
+# Proportion missing of minutes of moderate and vigorous physical activity after replacement
+sum(is.na(imputation_vars_full$PAD660))/nrow(imputation_vars_full) # 0.04% missing
+sum(is.na(imputation_vars_full$PAD675))/nrow(imputation_vars_full) # 0.09% missing
+
+# ---- Cleaning alcohol variables and managing sick quitter effect ---- #
+
+imputation_vars_full.2 <- imputation_vars_full %>%
+  
+  # --- Step 1: Harmonise the two different frequency variables into one ---
+  mutate(
+    Drinking_Days_Per_Year = case_when(
+      
+      # For older cycles, use the direct numeric value from ALQ120Q
+      SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") & ALQ120Q %in% c(777, 999) ~ NA_real_,
+      SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") ~ ALQ120Q,
+      
+      # For the 2017-2018 cycle, convert the categories from ALQ121
+      SurveyCycle == "2017-2018" ~ case_when(
+        ALQ121 %in% c(77, 99) ~ NA_real_,
+        ALQ121 == "Never in the last year" ~ 0,      # Never
+        ALQ121 == "Every day" ~ 365,    # Every day
+        ALQ121 == "Nearly every day" ~ 312,    # Nearly every day (~6/wk)
+        ALQ121 == "3 to 4 times a week" ~ 182,    # 3-4 times a week (~3.5/wk)
+        ALQ121 == "2 times a week" ~ 104,    # 2 times a week
+        ALQ121 == "Once a week" ~ 52,     # Once a week
+        ALQ121 == "2 to 3 times a month" ~ 30,     # 2-3 times a month (~2.5/mo)
+        ALQ121 == "Once a month" ~ 12,     # Once a month
+        ALQ121 == "7 to 11 times in the last year" ~ 9,      # 7-11 times a year (avg 9)
+        ALQ121 == "3 to 6 times in the last year" ~ 4.5,    # 3-6 times a year (avg 4.5)
+        ALQ121 == "1 to 2 times in the last year" ~ 1.5,   # 1-2 times a year (avg 1.5)
+        TRUE ~ NA_real_
+      )
+    )
+  ) %>%
+  
+  # --- Step 2: Clean the "drinks per day" variable (ALQ130) ---
+  mutate(
+    # First, handle the special codes for Refused/Don't Know
+    Clean_ALQ130 = case_when(
+      ALQ130 %in% c(777, 999) ~ NA_real_, 
+      TRUE ~ ALQ130
+    ),
+    
+    # Now, use  harmonised variable to set non-drinkers to 0
+    # handles the structural missingness correctly
+    Clean_ALQ130 = ifelse(Drinking_Days_Per_Year == 0, 0, Clean_ALQ130)
+  ) %>%
+  
+  # --- Step 3: Calculate the final average daily intake ---
+  mutate(
+    AvgDailyDrinks = (Clean_ALQ130 * Drinking_Days_Per_Year) / 365
+  ) %>%
+  
+  # --- Step 4: Ensure missing ALQ110 data is missing at random ---
+  mutate(
+    Clean_ALQ110 = case_when(
+      # If they are a current regular drinker (ALQ101 == 1), they must have drunk in their lifetime.
+      SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") & ALQ101 == "Yes" & is.na(ALQ110) ~ "Yes",
+      ALQ110 %in% c(7, 9) ~ NA_character_, 
+      # Otherwise, keep the original ALQ110 value for now
+      SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") ~ as.character(ALQ110),
+      TRUE ~ NA_character_ # This column doesn't exist in other cycles
+    )
+  ) %>%
+  
+  # --- Step 5: Create the single LifetimeDrinkerFlag ---
+  mutate(
+    LifetimeDrinkerFlag = case_when(
+      SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") & Clean_ALQ110 == "No" ~ "Never",
+      SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") & Clean_ALQ110 == "Yes" ~ "Ever",
+      
+      SurveyCycle == "2017-2018" & ALQ111 == "No" ~ "Never",
+      SurveyCycle == "2017-2018" & ALQ111 == "Yes" ~ "Ever",
+      
+      # Handle any remaining special codes
+      ALQ111 %in% c(7, 9) ~ NA_character_,
+      
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  
+  # --- Step 6: Correct AvgDailyDrinks for Never drinkers ---
+  mutate(
+    AvgDailyDrinks = ifelse(LifetimeDrinkerFlag == "Never", 0, AvgDailyDrinks),
+    
+    # Convert the character column to a factor and set the levels
+    LifetimeDrinkerFlag = factor(LifetimeDrinkerFlag, 
+                                   levels = c("Never", "Ever"))
+  ) %>%
+  
+  # --- Step 7: Final selection ---
+  select(-c("ALQ120Q", "ALQ130", "ALQ101", "ALQ110", "ALQ121", "ALQ111", "Drinking_Days_Per_Year", "Clean_ALQ110", "Clean_ALQ130"))
+
+
+# ---- Cleaning smoking variables ---- #
+
+imputation_vars_full.3 <- imputation_vars_full.2 %>%
+  mutate(
+    # Use case_when for clear, ordered logic.
+    Smoking_Status = factor(case_when(
+      
+      # Condition 1: If they answered "No" to ever smoking 100 cigarettes, they are a Never Smoker.
+      # The code for "No" is 2.
+      SMQ020 == "No" ~ "Never Smoker",
+      
+      # Condition 2: If they HAVE smoked 100 cigarettes (SMQ020 == 1),
+      # then we look at their answer to SMQ040.
+      SMQ020 == "Yes" ~ case_when(
+        # If they smoke "Every day" (1) or "Some days" (2), they are a Current Smoker.
+        SMQ040 %in% c("Every day", "Some days") ~ "Current Smoker",
+        # If they answered "Not at all" (3), they are a Former Smoker.
+        SMQ040 == "Not at all" ~ "Former Smoker",
+        # Handle any remaining special codes (like Refused/Don't Know) as NA
+        TRUE ~ NA_character_
+      ),
+      
+      # A fallback for any other case (e.g., if SMQ020 itself is missing, refused or don't know)
+      TRUE ~ NA_character_
+    ),
+    # Set the order of the factor levels for clear regression output
+    levels = c("Never Smoker", "Former Smoker", "Current Smoker"))
+  ) %>%
+  select(-c("SMQ020", "SMQ040"))
+
+# ---- Cleaning sleep data ---- #
+
+imputation_vars_full.4 <- imputation_vars_full.3 %>%
+  mutate(
+    # Create a single, harmonised sleep variable in hours
+    AvgNightlySleep = case_when(
+      
+      # For 2011-2014 cycles, use SLD010H
+      SurveyCycle %in% c("2011-2012", "2013-2014") & SLD010H %in% c(77, 99) ~ NA_real_,
+      SurveyCycle %in% c("2011-2012", "2013-2014") ~ SLD010H, # We will treat the top-code of 12 as 12
+      
+      # For the 2015-2016 cycle, use SLD012
+      SurveyCycle == "2015-2016" & SLD012 > 24 ~ NA_real_, # General plausibility check
+      SurveyCycle == "2015-2016" ~ SLD012,
+      
+      # For the 2017-2018 cycle, calculate the weighted average
+      SurveyCycle == "2017-2018" ~ {
+        # Handle the special codes first
+        weekday_sleep <- ifelse(SLD012 > 24, NA, SLD012)
+        weekend_sleep <- ifelse(SLD013 > 24, NA, SLD013)
+        
+        # Calculate the weighted average
+        ((weekday_sleep * 5) + (weekend_sleep * 2)) / 7
+      },
+      
+      # A fallback for any other case
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  select(-c("SLD010H", "SLD012", "SLD013", "SurveyCycle"))
+
+# Final adjustments pre-imputation
+imputation_vars_1118 <- imputation_vars_full.4 %>%
+  mutate(Phys = PAD660 + PAD675,
+         Height_m = BMXHT / 100) %>%
+  select(-c(BMXHT, PAD660, PAD675)) %>%
+  rename(
+    ID = SEQN,
+    PSU = SDMVPSU,
+    Strata = SDMVSTRA,
+    SurvWeight = WTMEC2YR,
+    Gender = RIAGENDR,
+    Age_yrs = RIDAGEYR,
+    Race = RIDRETH3,
+    FamIncPov_Ratio =INDFMPIR,
+    Bfp_perc = DXDTOPF,
+    WaistCircum_cm = BMXWAIST,
+    Hba1c_perc = LBXGH,
+    RightArmLean_g = DXDRALE,
+    LeftArmLean_g = DXDLALE,
+    RightLegLean_g = DXDRLLE,
+    LeftLegLean_g = DXDLLLE,
+    HEI = score
+  )
+```
 
 # References

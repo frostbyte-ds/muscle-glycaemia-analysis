@@ -59,19 +59,3 @@ alcohol1718 <- nhanes("ALQ_J")
 smoking1718 <- nhanes("SMQ_J")
 hei1718 <- score(method = "simple", years = "1718", component = "total score")
 sleep1718 <- nhanes("SLQ_J")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

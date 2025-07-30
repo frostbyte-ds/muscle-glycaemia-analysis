@@ -34,7 +34,7 @@ amelia_out_1118 <- amelia(imputation_vars_1118, m = 30,
                                 noms = c("Gender", "Race", "LifetimeDrinkerFlag", "Smoking_Status"),
                                 bounds = bounds_matrix_1118,
                                 parallel = "multicore",
-                                ncpus  = 21)    
+                                ncpus  = 15)    
 
 # Feature engineering to form ALMI, alcohol status, and hba1c outcome variables
 # Also removing redundant columns 

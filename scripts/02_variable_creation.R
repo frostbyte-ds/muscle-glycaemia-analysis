@@ -97,7 +97,8 @@ imputation_vars_full <- bind_rows(
   imputation_vars1718
 )
 
-# Need to set PAD675 to 0 where PAQ665 is 2 AND set PAD660 to 0 where PAQ650 is 2.
+# Need to set PAD675 to 0 where PAQ665 is "No" AND set PAD660 to 0 where PAQ650 is "No".
+# Also need to set PAD675 and PAD660 to NA whenever they are 9999 
 
 # Proportion missing of minutes of moderate and vigorous physical activity
 sum(is.na(imputation_vars_full$PAD660))/nrow(imputation_vars_full) # 69% missing
@@ -110,22 +111,28 @@ imputation_vars_full <- imputation_vars_full %>%
     # Otherwise, leave it as it is.
     PAD660 = ifelse(PAQ650 == "No" & is.na(PAD660), 0, PAD660),
     
+    # Assigning NA for "Don't know" code
+    PAD660 = ifelse(PAD660 == 9999, NA_real_, PAD660),
+    
     # For Moderate Activity (PAD675)
     # If PAQ665 is 2 ('No') AND PAD675 is currently NA, change it to 0.
     # Otherwise, leave it as it is.
-    PAD675 = ifelse(PAQ665 == "No" & is.na(PAD675), 0, PAD675)
+    PAD675 = ifelse(PAQ665 == "No" & is.na(PAD675), 0, PAD675),
+    
+    # Assigning NA for "Don't know" code 
+    PAD675 = ifelse(PAD675 == 9999, NA_real_, PAD675)
   ) %>%
   select(-c(PAQ665, PAQ650))
 
 # Proportion missing of minutes of moderate and vigorous physical activity after replacement
 sum(is.na(imputation_vars_full$PAD660))/nrow(imputation_vars_full) # 0.04% missing
-sum(is.na(imputation_vars_full$PAD675))/nrow(imputation_vars_full) # 0.08% missing
+sum(is.na(imputation_vars_full$PAD675))/nrow(imputation_vars_full) # 0.09% missing
 
 # ---- Cleaning alcohol variables and managing sick quitter effect ---- #
 
 imputation_vars_full.2 <- imputation_vars_full %>%
   
-  # --- Step 1: Harmonize the two different frequency variables into one ---
+  # --- Step 1: Harmonise the two different frequency variables into one ---
   mutate(
     Drinking_Days_Per_Year = case_when(
       
@@ -156,11 +163,11 @@ imputation_vars_full.2 <- imputation_vars_full %>%
   mutate(
     # First, handle the special codes for Refused/Don't Know
     Clean_ALQ130 = case_when(
-      ALQ130 > 30 ~ NA_real_, # This sets the two error outliers to NA too
+      ALQ130 %in% c(777, 999) ~ NA_real_, 
       TRUE ~ ALQ130
     ),
     
-    # Now, use  harmonized variable to set non-drinkers to 0
+    # Now, use  harmonised variable to set non-drinkers to 0
     # handles the structural missingness correctly
     Clean_ALQ130 = ifelse(Drinking_Days_Per_Year == 0, 0, Clean_ALQ130)
   ) %>%
@@ -245,7 +252,7 @@ imputation_vars_full.3 <- imputation_vars_full.2 %>%
 
 imputation_vars_full.4 <- imputation_vars_full.3 %>%
   mutate(
-    # Create a single, harmonized sleep variable in hours
+    # Create a single, harmonised sleep variable in hours
     AvgNightlySleep = case_when(
       
       # For 2011-2014 cycles, use SLD010H
