@@ -8,7 +8,7 @@
 
 This repository contains the complete R code and documentation for my Master's dissertation. The project investigates whether higher muscle mass, as a distinct component of body composition, is independently associated with better glycemic control (measured by HbA1c).
 
-The analysis uses data from four cycles of the National Health and Nutrition Examination Survey (NHANES) from 2011 to 2018. The project follows a reproducible workflow, from raw data loading and variable harmonization to final modeling, diagnostics, and prediction.
+The analysis uses data from four cycles of the National Health and Nutrition Examination Survey (NHANES) from 2011 to 2018. The project follows a reproducible workflow, from raw data loading and variable harmonisation to final modelling, diagnostics, and prediction.
 
 ------------------------------------------------------------------------
 
