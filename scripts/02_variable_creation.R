@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------------------- #
-# Combining the various survey cycles and carrying feature engineering and variable harminosation
+# Combining the various survey cycles and carrying feature engineering and variable harmonisation
 # ----------------------------------------------------------------------------------------------- #
 
 # Helper function for inner join of multiple datasets
@@ -177,7 +177,7 @@ imputation_vars_full.2 <- imputation_vars_full %>%
     AvgDailyDrinks = (Clean_ALQ130 * Drinking_Days_Per_Year) / 365
   ) %>%
   
-  # --- Step 4: Ensure missing ALQ110 data is missing at random ---
+  # --- Step 4: Cleaning ALQ110 and creating the single LifetimeDrinkerFlag ---
   mutate(
     Clean_ALQ110 = case_when(
       # If they are a current regular drinker (ALQ101 == 1), they must have drunk in their lifetime.
@@ -189,7 +189,6 @@ imputation_vars_full.2 <- imputation_vars_full %>%
     )
   ) %>%
   
-  # --- Step 5: Create the single LifetimeDrinkerFlag ---
   mutate(
     LifetimeDrinkerFlag = case_when(
       SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") & Clean_ALQ110 == "No" ~ "Never",
@@ -205,7 +204,7 @@ imputation_vars_full.2 <- imputation_vars_full %>%
     )
   ) %>%
   
-  # --- Step 6: Correct AvgDailyDrinks for Never drinkers ---
+  # --- Step 5: Correct AvgDailyDrinks for Never drinkers ---
   mutate(
     AvgDailyDrinks = ifelse(LifetimeDrinkerFlag == "Never", 0, AvgDailyDrinks),
     
@@ -214,7 +213,7 @@ imputation_vars_full.2 <- imputation_vars_full %>%
                                    levels = c("Never", "Ever"))
   ) %>%
   
-  # --- Step 7: Final selection ---
+  # --- Step 6: Final selection ---
   select(-c("ALQ120Q", "ALQ130", "ALQ101", "ALQ110", "ALQ121", "ALQ111", "Drinking_Days_Per_Year", "Clean_ALQ110", "Clean_ALQ130"))
 
 
@@ -252,31 +251,19 @@ imputation_vars_full.3 <- imputation_vars_full.2 %>%
 
 imputation_vars_full.4 <- imputation_vars_full.3 %>%
   mutate(
-    # Create a single, harmonised sleep variable in hours
+    # Create a single, harmonised sleep variable by selecting the correct column
     AvgNightlySleep = case_when(
-      
-      # For 2011-2014 cycles, use SLD010H
-      SurveyCycle %in% c("2011-2012", "2013-2014") & SLD010H %in% c(77, 99) ~ NA_real_,
-      SurveyCycle %in% c("2011-2012", "2013-2014") ~ SLD010H, # We will treat the top-code of 12 as 12
-      
-      # For the 2015-2016 cycle, use SLD012
-      SurveyCycle == "2015-2016" & SLD012 > 24 ~ NA_real_, # General plausibility check
-      SurveyCycle == "2015-2016" ~ SLD012,
-      
-      # For the 2017-2018 cycle, calculate the weighted average
-      SurveyCycle == "2017-2018" ~ {
-        # Handle the special codes first
-        weekday_sleep <- ifelse(SLD012 > 24, NA, SLD012)
-        weekend_sleep <- ifelse(SLD013 > 24, NA, SLD013)
-        
-        # Calculate the weighted average
-        ((weekday_sleep * 5) + (weekend_sleep * 2)) / 7
-      },
-      
-      # A fallback for any other case
-      TRUE ~ NA_real_
-    )
+      SurveyCycle %in% c("2011-2012", "2013-2014") ~ SLD010H,
+      SurveyCycle %in% c("2015-2016", "2017-2018") ~ SLD012,
+      TRUE ~ NA_real_ # Fallback for any other case
+    ),
+    
+    # Now, clean the new 'AvgNightlySleep' variable in a single step
+    # This handles special codes (77, 99)
+    AvgNightlySleep = ifelse(AvgNightlySleep %in% c(77, 99), NA_real_, AvgNightlySleep)
   ) %>%
+  
+  # Select out all original sleep variables and survey cycle label
   select(-c("SLD010H", "SLD012", "SLD013", "SurveyCycle"))
 
 # Final adjustments pre-imputation

@@ -94,6 +94,3 @@ ggplot(imp1, aes(x = Almi, y = Hba1c_perc, colour=Gender)) +
   labs(title = "Glycated Hemoglobin vs. Appendicular Lean Mass Index by Gender",
        x = "ALMI (kg/m²)",
        y = "HbA1c (%)")
-
-
-

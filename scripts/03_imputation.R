@@ -7,7 +7,7 @@
 # Good amount of missingness for Amelia to handle
 colSums(is.na(imputation_vars_1118))
 
-# Setting realstic bounds for continuous variables for imputation
+# Setting realistic bounds for continuous variables for imputation
 bounds_matrix_1118 <- matrix(
   c(
     which(names(imputation_vars_1118) == "FamIncPov_Ratio"),               0,     5,   # Family income to poverty ratio
@@ -19,7 +19,7 @@ bounds_matrix_1118 <- matrix(
     which(names(imputation_vars_1118) == "LeftArmLean_g"),  500,   15000,  # L Arm Lean (g)
     which(names(imputation_vars_1118) == "RightLegLean_g"),  500,   15000,  # R Leg Lean (g)
     which(names(imputation_vars_1118) == "LeftLegLean_g"),  500,   15000,  # L Leg Lean (g)
-    which(names(imputation_vars_1118) == "Phys"),   0,     2000,   # Moderate + Vigourous Recreational Physical Activity (mins)
+    which(names(imputation_vars_1118) == "Phys"),   0,     2000,   # Moderate + Vigorous Recreational Physical Activity (mins)
     which(names(imputation_vars_1118) == "AvgDailyDrinks"), 0,    20,        # Average # of alcoholic drinks per day for the last year
     which(names(imputation_vars_1118) == "HEI"), 0,    100,      # Healthy Eating Index (HEI)
     which(names(imputation_vars_1118) == "AvgNightlySleep"),     2,     15   # Average hours of sleep per night

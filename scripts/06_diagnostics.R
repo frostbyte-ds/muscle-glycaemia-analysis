@@ -2,11 +2,6 @@
 # Model Diagnostics
 # ----------------- #
 
-# Estimation of dispersion under the binomial assumption using progression model 4 on imputation 1
-# 83.3 indicates high level of overdispersion, justifying the choice quasibinomial
-dispersion_estimate <- logistic_progression.4$imp1$deviance / logistic_progression.4$imp1$df.residual
-dispersion_estimate
-
 # --- Archer-Lemeshow Goodness-of-Fit Test --- #
 
 # Goodness-of-fit function 
@@ -62,8 +57,6 @@ for (i in 1:10) {
   # Select the current list of model fits
   onset.model.list <- all_onset_model_lists[[i]]
   
-  # --- This is your existing, correct code for pooling the F-test ---
-  
   # Initialize an empty vector for F-statistics for the current model
   onset.f.statistics <- c()
   
@@ -77,10 +70,10 @@ for (i in 1:10) {
     
     # Extract and store the F-statistic
     onset.f.statistics[j] <- gof_test_result$Ftest
-    
-    # Numerator degrees of freedom (df1)
-    df1 <- gof_test_result$df
   }
+  
+  # Numerator degrees of freedom (df1)
+  df1 <- gof_test_result$df
   
   # Pool the F-statistics for the current model
   pooled_gof_test <- micombine.F(onset.f.statistics, df1 = df1)
@@ -123,8 +116,6 @@ for (i in 1:10) {
   # Select the current list of model fits
   prog.model.list <- all_prog_model_lists[[i]]
   
-  # --- This is your existing, correct code for pooling the F-test ---
-  
   # Initialize an empty vector for F-statistics for the current model
   prog.f.statistics <- c()
   
@@ -138,10 +129,10 @@ for (i in 1:10) {
     
     # Extract and store the F-statistic
     prog.f.statistics[j] <- gof_test_result$Ftest
-    
-    # Numerator degrees of freedom (df1)
-    df1 <- gof_test_result$df
   }
+  
+  # Numerator degrees of freedom (df1)
+  df1 <- gof_test_result$df
   
   # Pool the F-statistics for the current model
   pooled_gof_test <- micombine.F(prog.f.statistics, df1 = df1)
@@ -202,7 +193,7 @@ print(prog.pseudo.r2.list)
 # Array of covariate changes for diagnostic and summary tables
 covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
                 "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
-                "- Alcohol Status + Smoking Status", "+ Average Daily Sleep (hrs)")
+                "+ Smoking Status", "+ Average Daily Sleep (hrs)")
 
 # Onset
 
@@ -304,32 +295,60 @@ prog.diag.table
 
 # binnedplot in the arm package is ideal for this case
 
+# Seek to plot binned residuals of the parsimonious onset and progression models
+# for the first 9 imputations to assess model fit and if there are any significant
+# differences between imputed datasets
+
 # Onset
-binnedplot(fitted(logistic_onset.4$imp1), 
-           residuals(logistic_onset.4$imp1, type = "response"), 
-           nclass = NULL, 
-           xlab = "Expected Values", 
-           ylab = "Average residual", 
-           main = "Binned residual plot", 
-           cex.pts = 0.8, 
-           col.pts = 1, 
-           col.int = "gray")
+par(mfrow = c(3, 3))
+
+# Loop through the first 9 imputations for the onset model
+for (i in 1:9) {
+  # Assuming logistic_onset.4 is a list of model fits
+  model_fit <- logistic_onset.4[[i]]
+  
+  binnedplot(
+    fitted(model_fit),
+    residuals(model_fit, type = "response"),
+    nclass = NULL,
+    xlab = "Expected Values",
+    ylab = "Average residual",
+    main = paste("Onset Model - Imputation", i), # Add a dynamic title
+    cex.pts = 0.8,
+    col.pts = 1,
+    col.int = "gray"
+  )
+}
 
 # Progression
-binnedplot(fitted(logistic_progression.4$imp1), 
-           residuals(logistic_progression.4$imp1, type = "response"), 
-           nclass = NULL, 
-           xlab = "Expected Values", 
-           ylab = "Average residual", 
-           main = "Binned residual plot", 
-           cex.pts = 0.8, 
-           col.pts = 1, 
-           col.int = "gray")
+
+# Loop through the first 9 imputations for the progression model
+for (i in 1:9) {
+  # Assuming logistic_progression.4 is a list of model fits
+  model_fit <- logistic_progression.4[[i]]
+  
+  binnedplot(
+    fitted(model_fit),
+    residuals(model_fit, type = "response"),
+    nclass = NULL,
+    xlab = "Expected Values",
+    ylab = "Average residual",
+    main = paste("Progression Model - Imputation", i), # Add a dynamic title
+    cex.pts = 0.8,
+    col.pts = 1,
+    col.int = "gray"
+  )
+}
+
+par(mfrow = c(1, 1))
 
 # Both look good - residuals fine
+# No significant differences between imputations
 
 # Now creating binned component + residual plots to justify the choice of linear
 # covariates in both models
+
+# Only using imputation 1 here
 
 # Onset
 
@@ -419,7 +438,7 @@ par(mfrow = c(1, 1))
 # We do not want conclusions to depend on a small amount of influential points
 
 # Finding and plotting cooks distances for onset model 4 on imputation 1
-# Crucially, the results are very similar on other impuations, so only considering impuation 1 here is okay
+# Crucially, the results are very similar on other imputations, so only considering imputation 1 here is okay
 onset.cooks <- svyCooksD(logistic_onset.4$imp1, doplot=TRUE)
 # Saving indices of those points with the top 1% cooks distance
 onset_cooks_threshold <- quantile(onset.cooks, probs = 0.99)
@@ -436,7 +455,7 @@ onset_influential_obs$CooksD <- onset.cooks[onset_influential_indices]
 onset_reduced_data <- design_list$imp1$variables[-onset_influential_indices, ]
 
 # Create a new survey design object with this reduced dataset
-# Make sure to use the same formula for strata, id, and weights as your original design
+# Make sure to use the same formula for strata, id, and weights as the original design
 onset_reduced_design <- svydesign(id = ~PSU, 
                             strata = ~Strata, 
                             weights = ~SurvWeight,
@@ -470,7 +489,7 @@ prog_influential_obs$CooksD <- prog.cooks[prog_influential_indices]
 prog_reduced_data <- design_list$imp1$variables[-prog_influential_indices, ]
 
 # Create a new survey design object with this reduced dataset
-# Make sure to use the same formula for strata, id, and weights as your original design
+# Make sure to use the same formula for strata, id, and weights as the original design
 prog_reduced_design <- svydesign(id = ~PSU, 
                                   strata = ~Strata, 
                                   weights = ~SurvWeight,

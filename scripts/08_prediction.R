@@ -4,7 +4,8 @@
 
 # Using progression model 4 to find predictions of the probability of becoming diabetic vs ALMI
 # Predictions will be made on all 30 imputations and then combined using Rubin's Rules
-# Will produce predictions for both male and female
+# Will produce predictions for both male and female because model coefficients suggested
+# odds of diabetes were largely different between men and women
 
 # --- Step 1: Define model and data objects ---
 m <- 30 # Number of imputations
@@ -41,7 +42,7 @@ predict_df_female <- predict_df_base %>%
 predict_df_combined <- rbind(predict_df_male, predict_df_female)
 
 # --- Step 3: Predict on ALL Imputations ---
-# We'll loop through each of the 30 models and get predictions.
+# Loop through each of the 30 models and get predictions.
 
 prediction_list <- lapply(logistic_progression.4, function(model) {
   
@@ -55,7 +56,7 @@ prediction_list <- lapply(logistic_progression.4, function(model) {
 })
 
 # --- Step 4: Pool the Results Using Rubin's Rules ---
-# Now we combine the 30 sets of predictions into one final result.
+# Now combine the 30 sets of predictions into one final result.
 
 # First, stack all the dataframes from the list into one big dataframe,
 # adding an ID for each imputation.
@@ -115,6 +116,3 @@ ggplot(plot_data_pooled, aes(x = Almi, y = pooled_prevalence, color = Gender, fi
     y = "Predicted Prevalence of Diabetes"
   ) +
   theme(legend.position = "bottom")
-
-
-

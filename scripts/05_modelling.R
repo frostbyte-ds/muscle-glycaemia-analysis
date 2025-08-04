@@ -81,21 +81,17 @@ logistic_onset.8 <- lapply(design_list, function(design_obj) {
 pooled_logistic_onset.8 <- MIcombine(logistic_onset.8)
 summary(pooled_logistic_onset.8)
 
-# Alcohol status behaves counter-intuitively and does not appear to be a strong confounder so it is safe to remove
-
-# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status
+# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status
 logistic_onset.9 <- lapply(design_list, function(design_obj) {
-  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status,
+  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_onset.9 <- MIcombine(logistic_onset.9)
 summary(pooled_logistic_onset.9)
 
-# Smoking status variable behaves as expected - no strange issues like the alcohol variable
-
-# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status + AvgNightlySleep
+# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep
 logistic_onset.10 <- lapply(design_list, function(design_obj) {
-  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status + AvgNightlySleep,
+  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_onset.10 <- MIcombine(logistic_onset.10)
@@ -161,7 +157,7 @@ logistic_progression.7 <- lapply(design_list, function(design_obj) {
 pooled_logistic_progression.7 <- MIcombine(logistic_progression.7)
 summary(pooled_logistic_progression.7)
 
-# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + Phys + HEI + Alcohol_Status
+# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status
 logistic_progression.8 <- lapply(design_list, function(design_obj) {
   svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status,
          design = design_obj, family = quasibinomial)
@@ -169,17 +165,17 @@ logistic_progression.8 <- lapply(design_list, function(design_obj) {
 pooled_logistic_progression.8 <- MIcombine(logistic_progression.8)
 summary(pooled_logistic_progression.8)
 
-# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status
+# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status
 logistic_progression.9 <- lapply(design_list, function(design_obj) {
-  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status,
+  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_progression.9 <- MIcombine(logistic_progression.9)
 summary(pooled_logistic_progression.9)
 
-# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status + AvgNightlySleep
+# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep
 logistic_progression.10 <- lapply(design_list, function(design_obj) {
-  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Smoking_Status + AvgNightlySleep,
+  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_progression.10 <- MIcombine(logistic_progression.10)
