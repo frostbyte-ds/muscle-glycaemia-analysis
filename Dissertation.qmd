@@ -7,6 +7,7 @@ format:
     latex-engine: xelatex
     fontsize: 12pt
     geometry: "left=2cm, right=2cm, top=3cm, bottom=3cm"
+    keep-tex: true
 toc: true
 toc-depth: 4
 include-in-header:
@@ -17,6 +18,49 @@ editor: visual
 bibliography: References.bib
 csl: acm.csl
 ---
+
+```{r, message=FALSE, include=FALSE}
+
+library(gt)
+library(tidyverse)
+library(gridExtra)
+library(ggthemes)
+library(systemfonts)
+library(showtext)
+library(kableExtra)
+
+# Registering fonts
+font_add("barlow",
+         regular = "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\BarlowSemiCondensed-Regular.ttf",
+         bold = "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\Windows\\Fonts\\BarlowSemiCondensed-SemiBold.ttf")
+
+# Verify that showtext sees the font
+showtext_auto()
+```
+
+```{r, include=FALSE}
+
+# Setting up custom ggplot theme
+
+# Theme by Andrew Heiss
+theme_clean = function() {
+  theme_minimal(base_family = "barlow") +  # Use the loaded font
+    theme(panel.grid.minor = element_blank(),
+          plot.background = element_rect(fill = "white", color = NA),
+          plot.title = element_text(face = "bold"),
+          plot.caption = element_text(size = 10, hjust = 0),
+          axis.title = element_text(face = "bold"),
+          strip.text = element_text(face = "bold", size = rel(0.8), hjust = 0),
+          strip.background = element_rect(fill = "grey80", color = NA),
+          legend.title = element_text(face = "bold"))
+}
+```
+
+```{r, include=FALSE}
+
+# Load the pre-computed objects
+load("report_assets.RData")
+```
 
 # Abstract
 
@@ -223,7 +267,7 @@ Prior to the dual-model approach, the initial modelling strategy was to use surv
 
 2.  Prediabetic HbA1c ($\geq$ 5.7% & $<$ 6.5%)
 
-3.  Diabetic HbA1c ($\geq$\$ 6.5%)
+3.  Diabetic HbA1c ($\geq$ 6.5%)
 
 This form of model attempts to predict the cumulative log odds of being at or below a certain step of the ordered outcome, and how the predictors effect it. The key assumption that is associated with ordinal regression is that of proportional odds. The assumption is that the effect of any given predictor is the same across all the different thresholds of the outcome variable. This means that the effect of having more muscle (ALMI) on the odds of moving from "Normal" to "Prediabetic" is the same as moving from "Prediabetic to "Diabetic".
 
@@ -297,13 +341,85 @@ The mean performance metrics from each repeat were averaged to produce the final
 
 # Results
 
+```{r, echo=FALSE}
+#| label: tbl-desc
+#| tbl-cap: "Pooled Characteristics of the Final Analytical Sample"
+#| tbl-pos: "!h"
+
+descriptive_tbl_kbl
+
+```
+
+```{r, echo=FALSE}
+#| label: tbl-onsetsum
+#| tbl-cap: "Summary of Logistic Regression Pooled Onset Models"
+#| tbl-pos: "!h"
+
+
+onset.summary.table.kbl
+```
+
+```{r, echo=FALSE}
+#| label: tbl-progsum
+#| tbl-cap: "Summary of Logistic Regression Pooled Progression Models"
+#| tbl-pos: "!h"
+
+
+prog.summary.table.kbl
+```
+
+```{r, echo=FALSE}
+#| label: tbl-onsetadj
+#| tbl-cap: "Summary of Fully Adjusted Pooled Onset Model"
+#| tbl-pos: "!h"
+
+
+onset.adjusted.summary.tbl.kbl
+```
+
+```{r, echo=FALSE}
+#| label: tbl-progadj
+#| tbl-cap: "Summary of Fully Adjusted Pooled Progression Model"
+#| tbl-pos: "!h"
+
+
+prog.adjusted.summary.tbl.kbl
+```
+
+```{r, echo=FALSE}
+#| label: tbl-cvtable
+#| tbl-cap: "Results of 5-fold Cross-Validation Repeated 10 Times"
+#| tbl-pos: "!h"
+
+
+cv_summary_tbl_kbl
+```
+
+```{r, echo=FALSE}
+#| label: predPlot
+#| fig-cap: "Predictions"
+
+pred.plot
+
+```
+
+```{r, echo=FALSE}
+#| label: rocPlot
+#| fig-cap: "ROC Curve"
+
+roc_plot
+
+```
+
 # Discussion
 
 # Conclusions
 
-# Appendix
+# Appendices
 
-## Loading packages
+The following appendices contain all the R code needed to produce the results of this research paper.
+
+## Appendix A: Loading packages
 
 \scriptsize
 
@@ -333,7 +449,7 @@ library(gridExtra) # For presentation of visualisations
 library(WeightedROC) # For survey weighted ROC and AUC calculations 
 ```
 
-## Loading NHANES data {#nhanes}
+## Appendix B: Loading NHANES data {#nhanes}
 
 ```{r, eval=FALSE}
 # -------------------------------------- #
@@ -399,7 +515,7 @@ hei1718 <- score(method = "simple", years = "1718", component = "total score")
 sleep1718 <- nhanes("SLQ_J")
 ```
 
-## Data processing {#procCode}
+## Appendix C: Data processing {#procCode}
 
 ```{r, eval=FALSE}
 # ----------------------------------------------------------------------------------------------- #
@@ -436,7 +552,8 @@ xsec.data1718 <- multi_inner_join(dfs1718) %>%
 
 # Array of variables needed from each time period
 vars1112 <- c(
-  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",  # Survey structure and demographics
+  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",  # Survey structure and
+  # demographics
   "BMXHT", "BMXWAIST",  # Body measures
   "LBXGH",  # HbA1c
   "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",  # Lean muscle in the limbs
@@ -618,7 +735,8 @@ imputation_vars_full.2 <- imputation_vars_full %>%
   ) %>%
   
   # --- Step 6: Final selection ---
-  select(-c("ALQ120Q", "ALQ130", "ALQ101", "ALQ110", "ALQ121", "ALQ111", "Drinking_Days_Per_Year", "Clean_ALQ110", "Clean_ALQ130"))
+  select(-c("ALQ120Q", "ALQ130", "ALQ101", "ALQ110", "ALQ121", "ALQ111", "Drinking_Days_Per_Year", "Clean_ALQ110",
+            "Clean_ALQ130"))
 
 
 # ---- Cleaning smoking variables ---- #
@@ -707,7 +825,7 @@ imputation_vars_1118 <- imputation_vars_full.4 %>%
   )
 ```
 
-## Multiple Imputation {#imp}
+## Appendix D: Multiple Imputation {#imp}
 
 ```{r, eval=FALSE}
 # -------------------------------- #
@@ -731,8 +849,10 @@ bounds_matrix_1118 <- matrix(
     which(names(imputation_vars_1118) == "LeftArmLean_g"),  500,   15000,  # L Arm Lean (g)
     which(names(imputation_vars_1118) == "RightLegLean_g"),  500,   15000,  # R Leg Lean (g)
     which(names(imputation_vars_1118) == "LeftLegLean_g"),  500,   15000,  # L Leg Lean (g)
-    which(names(imputation_vars_1118) == "Phys"),   0,     2000,   # Moderate + Vigourous Recreational Physical Activity (mins)
-    which(names(imputation_vars_1118) == "AvgDailyDrinks"), 0,    20,        # Average # of alcoholic drinks per day for the last year
+    which(names(imputation_vars_1118) == "Phys"),   0,     2000,   # Moderate + Vigourous Recreational Physical
+    # Activity (mins)
+    which(names(imputation_vars_1118) == "AvgDailyDrinks"), 0,    20,        # Average # of alcoholic drinks per day
+    # for the last year
     which(names(imputation_vars_1118) == "HEI"), 0,    100,      # Healthy Eating Index (HEI)
     which(names(imputation_vars_1118) == "AvgNightlySleep"),     2,     15   # Average hours of sleep per night
   ),
@@ -793,11 +913,12 @@ imputed_1118 <- lapply(amelia_out_1118$imputations, function(df) {
       is_diabetic = ifelse(Hba1c_perc >= 6.5, 1, 0)
     ) %>%
     
-    select(-c(RightArmLean_g, LeftArmLean_g, RightLegLean_g, LeftLegLean_g, Alm_kg, AvgDailyDrinks, LifetimeDrinkerFlag))
+    select(-c(RightArmLean_g, LeftArmLean_g, RightLegLean_g, LeftLegLean_g, Alm_kg, AvgDailyDrinks,
+              LifetimeDrinkerFlag))
 })
 ```
 
-## Exploratory Data Analysis
+## Appendix E: Exploratory Data Analysis
 
 ```{r, eval=FALSE}
 # -------------------------------------------- #
@@ -898,7 +1019,7 @@ ggplot(imp1, aes(x = Almi, y = Hba1c_perc, colour=Gender)) +
        y = "HbA1c (%)")
 ```
 
-## Modelling
+## Appendix F: Modelling
 
 ```{r, eval=FALSE}
 # -------------------------------------------------- #
@@ -976,25 +1097,31 @@ logistic_onset.7 <- lapply(design_list, function(design_obj) {
 pooled_logistic_onset.7 <- MIcombine(logistic_onset.7)
 summary(pooled_logistic_onset.7)
 
-# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status
+# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI +
+# Alcohol_Status
 logistic_onset.8 <- lapply(design_list, function(design_obj) {
-  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status,
+  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+         + Alcohol_Status,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_onset.8 <- MIcombine(logistic_onset.8)
 summary(pooled_logistic_onset.8)
 
-# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status
+# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI +
+# Alcohol_Status + Smoking_Status
 logistic_onset.9 <- lapply(design_list, function(design_obj) {
-  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status,
+  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+         + Alcohol_Status + Smoking_Status,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_onset.9 <- MIcombine(logistic_onset.9)
 summary(pooled_logistic_onset.9)
 
-# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep
+# at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI +
+# Alcohol_Status + Smoking_Status + AvgNightlySleep
 logistic_onset.10 <- lapply(design_list, function(design_obj) {
-  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep,
+  svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+         + Alcohol_Status + Smoking_Status + AvgNightlySleep,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_onset.10 <- MIcombine(logistic_onset.10)
@@ -1060,42 +1187,42 @@ logistic_progression.7 <- lapply(design_list, function(design_obj) {
 pooled_logistic_progression.7 <- MIcombine(logistic_progression.7)
 summary(pooled_logistic_progression.7)
 
-# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + Phys + HEI + Alcohol_Status
+# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status
 logistic_progression.8 <- lapply(design_list, function(design_obj) {
-  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status,
+  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+         + Alcohol_Status,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_progression.8 <- MIcombine(logistic_progression.8)
 summary(pooled_logistic_progression.8)
 
-# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status
+# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI +
+# Alcohol_Status + Smoking_Status
 logistic_progression.9 <- lapply(design_list, function(design_obj) {
-  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status,
+  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+         + Alcohol_Status + Smoking_Status,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_progression.9 <- MIcombine(logistic_progression.9)
 summary(pooled_logistic_progression.9)
 
-# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep
+# is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI +
+# Alcohol_Status + Smoking_Status + AvgNightlySleep
 logistic_progression.10 <- lapply(design_list, function(design_obj) {
-  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI + Alcohol_Status + Smoking_Status + AvgNightlySleep,
+  svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+         + Alcohol_Status + Smoking_Status + AvgNightlySleep,
          design = design_obj, family = quasibinomial)
 })
 pooled_logistic_progression.10 <- MIcombine(logistic_progression.10)
 summary(pooled_logistic_progression.10)
 ```
 
-## Diagnostics {#diagcode}
+## Appendix G: Diagnostics {#diagcode}
 
 ```{r, eval=FALSE}
 # ----------------- #
 # Model Diagnostics
 # ----------------- #
-
-# Estimation of dispersion under the binomial assumption using progression model 4 on imputation 1
-# 83.3 indicates high level of overdispersion, justifying the choice quasibinomial
-dispersion_estimate <- logistic_progression.4$imp1$deviance / logistic_progression.4$imp1$df.residual
-dispersion_estimate
 
 # --- Archer-Lemeshow Goodness-of-Fit Test --- #
 
@@ -1152,7 +1279,7 @@ for (i in 1:10) {
   # Select the current list of model fits
   onset.model.list <- all_onset_model_lists[[i]]
   
-  # --- This is your existing, correct code for pooling the F-test ---
+  # --- This is existing, correct code for pooling the F-test ---
   
   # Initialize an empty vector for F-statistics for the current model
   onset.f.statistics <- c()
@@ -1213,7 +1340,7 @@ for (i in 1:10) {
   # Select the current list of model fits
   prog.model.list <- all_prog_model_lists[[i]]
   
-  # --- This is your existing, correct code for pooling the F-test ---
+  # --- This is existing, correct code for pooling the F-test ---
   
   # Initialize an empty vector for F-statistics for the current model
   prog.f.statistics <- c()
@@ -1291,8 +1418,8 @@ print(prog.pseudo.r2.list)
 
 # Array of covariate changes for diagnostic and summary tables
 covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
-                "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
-                "+ Smoking Status", "+ Average Daily Sleep (hrs)")
+                "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index",
+                "+ Alcohol Status", "+ Smoking Status", "+ Average Daily Sleep (hrs)")
 
 # Onset
 
@@ -1526,7 +1653,7 @@ onset_influential_obs$CooksD <- onset.cooks[onset_influential_indices]
 onset_reduced_data <- design_list$imp1$variables[-onset_influential_indices, ]
 
 # Create a new survey design object with this reduced dataset
-# Make sure to use the same formula for strata, id, and weights as your original design
+# Make sure to use the same formula for strata, id, and weights as the original design
 onset_reduced_design <- svydesign(id = ~PSU, 
                             strata = ~Strata, 
                             weights = ~SurvWeight,
@@ -1560,7 +1687,7 @@ prog_influential_obs$CooksD <- prog.cooks[prog_influential_indices]
 prog_reduced_data <- design_list$imp1$variables[-prog_influential_indices, ]
 
 # Create a new survey design object with this reduced dataset
-# Make sure to use the same formula for strata, id, and weights as your original design
+# Make sure to use the same formula for strata, id, and weights as the original design
 prog_reduced_design <- svydesign(id = ~PSU, 
                                   strata = ~Strata, 
                                   weights = ~SurvWeight,
@@ -1577,7 +1704,7 @@ prog_without_influential <- svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race 
 summary(prog_without_influential)
 ```
 
-## Model Results and Summaries
+## Appendix H: Model Results and Summaries
 
 ```{r, eval=FALSE}
 # --------------------------------------------- #
@@ -1604,7 +1731,8 @@ onset.almi.confint <- sapply(pooled.onset.names, function(name) {
 
 onset.percent.changes <- c("N/A")  # First % is NA as there is no comparison
 for (i in 1:9) {
-  onset.percent.changes[i+1] <- ((abs(onset.almi.coeffs[i + 1]) - abs(onset.almi.coeffs[i])) / abs(onset.almi.coeffs[i])) * 100
+  onset.percent.changes[i+1] <- ((abs(onset.almi.coeffs[i + 1]) - abs(onset.almi.coeffs[i])) /
+                                   abs(onset.almi.coeffs[i])) * 100
 }
 
 # Progression
@@ -1625,7 +1753,8 @@ prog.almi.confint <- sapply(pooled.prog.names, function(name) {
 
 prog.percent.changes <- c("N/A")
 for (i in 1:9) {
-  prog.percent.changes[i+1] <- ((abs(prog.almi.coeffs[i + 1]) - abs(prog.almi.coeffs[i])) / abs(prog.almi.coeffs[i])) * 100
+  prog.percent.changes[i+1] <- ((abs(prog.almi.coeffs[i + 1]) - abs(prog.almi.coeffs[i])) /
+                                  abs(prog.almi.coeffs[i])) * 100
 }
 
 # ----- ONSET SUMMARY TABLE ----- #
@@ -1679,7 +1808,8 @@ onset.summary.table <- onset.summary.df %>%
   ) %>%
   cols_align(
     align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`, `Percentage Change in Coefficient`)
+    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`,
+                `Percentage Change in Coefficient`)
   ) %>%
   
   # Add a title and subtitle 
@@ -1741,7 +1871,8 @@ prog.summary.table <- prog.summary.df %>%
   ) %>%
   cols_align(
     align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`, `Percentage Change in Coefficient`)
+    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`,
+                `Percentage Change in Coefficient`)
   ) %>%
   
   # Add a title and subtitle 
@@ -1834,7 +1965,6 @@ onset.forest.plot.data <- data.frame(
     TRUE ~ variable  # Keep original name if no match
   ))
 
-
 # --- Step 2: Create the Forest Plot --- #
 
 ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
@@ -1859,7 +1989,8 @@ ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
 # Also making a table of these values
 
 # Combining CIs into a single string column
-onset.adjusted.ci.combined <- paste0("(", sprintf("%.3f", onset.forest.plot.data$lower_ci), ", ", sprintf("%.3f", onset.forest.plot.data$upper_ci), ")")
+onset.adjusted.ci.combined <- paste0("(", sprintf("%.3f", onset.forest.plot.data$lower_ci), ", ", sprintf("%.3f",
+                        onset.forest.plot.data$upper_ci), ")")
 
 # Dataframe for table
 onset.adjusted.summary.df <- onset.forest.plot.data[,c(1,5)] %>%
@@ -1970,7 +2101,8 @@ ggplot(prog.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
 # Now making a table for these values
 
 # Combining CIs into a single string column
-prog.adjusted.ci.combined <- paste0("(", sprintf("%.3f", prog.forest.plot.data$lower_ci), ", ", sprintf("%.3f", prog.forest.plot.data$upper_ci), ")")
+prog.adjusted.ci.combined <- paste0("(", sprintf("%.3f", prog.forest.plot.data$lower_ci), ", ", sprintf("%.3f",
+                     prog.forest.plot.data$upper_ci), ")")
 
 # Dataframe for table
 prog.adjusted.summary.df <- prog.forest.plot.data[,c(1,5)] %>%
@@ -2013,7 +2145,129 @@ prog.adjusted.summary.tbl <- prog.adjusted.summary.df %>%
 prog.adjusted.summary.tbl
 ```
 
-## Cross Validation
+## Appendix I: Model Prediction {#predcode}
+
+```{r, eval=FALSE}
+# ----------------- #
+# Model Predictions
+# ----------------- #
+
+# Using progression model 4 to find predictions of the probability of becoming diabetic vs ALMI
+# Predictions will be made on all 30 imputations and then combined using Rubin's Rules
+# Will produce predictions for both male and female
+
+# --- Step 1: Define model and data objects ---
+m <- 30 # Number of imputations
+
+# Use the first imputed dataset as a template for creating the prediction grid
+# This is a safe and standard practice
+template_data <- design_list$imp1$variables
+
+# --- Step 2: Create prediction dataframes (one for each gender) ---
+
+# Create a sequence of Almi values to predict over
+almi_range <- seq(min(template_data$Almi),
+                  max(template_data$Almi),
+                  length.out = 100)
+
+# Base prediction df with average/modal values for all other confounders
+predict_df_base <- data.frame(
+  Almi = almi_range,
+  Age_yrs = mean(template_data$Age_yrs),
+  Race = factor("Non-Hispanic White", levels = levels(template_data$Race)),
+  Bfp_perc = mean(template_data$Bfp_perc),
+  WaistCircum_cm = mean(template_data$WaistCircum_cm)
+)
+
+# Create a specific version for Males
+predict_df_male <- predict_df_base %>%
+  mutate(Gender = factor("Male", levels = levels(template_data$Gender)))
+
+# Create a specific version for Females
+predict_df_female <- predict_df_base %>%
+  mutate(Gender = factor("Female", levels = levels(template_data$Gender)))
+
+# Combine into a single newdata object for easier looping
+predict_df_combined <- rbind(predict_df_male, predict_df_female)
+
+# --- Step 3: Predict on ALL Imputations ---
+# We'll loop through each of the 30 models and get predictions.
+
+prediction_list <- lapply(logistic_progression.4, function(model) {
+  
+  # Get predictions (response = probability) and the standard error for each
+  preds <- predict(model, newdata = predict_df_combined, type = "response", se.fit = TRUE)
+  
+  # Combine the predictors and the predictions into a single dataframe
+  imputation_results <- cbind(predict_df_combined, as.data.frame(preds))
+  
+  return(imputation_results)
+})
+
+# --- Step 4: Pool the Results Using Rubin's Rules ---
+# Now we combine the 30 sets of predictions into one final result.
+
+# First, stack all the dataframes from the list into one big dataframe,
+# adding an ID for each imputation.
+all_predictions <- bind_rows(prediction_list, .id = "imputation_id")
+
+# Now, group by each prediction point and apply Rubin's rules
+plot_data_pooled <- all_predictions %>%
+  # Make sure the SE from predict() is named consistently
+  rename(prevalence = response, se = SE) %>%
+  
+  # Group by each unique combination of predictors
+  group_by(Almi, Age_yrs, Gender, Race, Bfp_perc, WaistCircum_cm) %>%
+  
+  # Apply the pooling formulas
+  summarise(
+    # 1. Average the predicted probabilities
+    pooled_prevalence = mean(prevalence),
+    
+    # 2. Calculate the 'within' imputation variance (average of the variances)
+    within_imputation_var = mean(se^2),
+    
+    # 3. Calculate the 'between' imputation variance (variance of the averages)
+    between_imputation_var = var(prevalence),
+    
+    # 4. Combine them for the total variance
+    total_variance = within_imputation_var + (1 + 1/m) * between_imputation_var,
+    
+    # 5. Get the final pooled standard error
+    pooled_se = sqrt(total_variance),
+    
+    .groups = 'drop' # Ungroup for the next steps
+  ) %>%
+  
+  # 6. Calculate the final 95% confidence interval
+  mutate(
+    lower_ci = pooled_prevalence - 1.96 * pooled_se,
+    upper_ci = pooled_prevalence + 1.96 * pooled_se
+  )
+
+# --- Step 5: Create the final plot with two lines ---
+
+ggplot(plot_data_pooled, aes(x = Almi, y = pooled_prevalence, color = Gender, fill = Gender)) +
+  # Add the prediction lines
+  geom_line(linewidth = 1.2) +
+  
+  # Add the confidence ribbons
+  geom_ribbon(aes(ymin = lower_ci, ymax = upper_ci), alpha = 0.2, linetype = "blank") +
+  
+  # Customize colors and labels
+  scale_color_manual(values = c("Male" = "blue", "Female" = "red")) +
+  scale_fill_manual(values = c("Male" = "blue", "Female" = "red")) +
+  
+  labs(
+    title = "Predicted Prevalence of Diabetes by Muscle Mass (ALMI) and Gender",
+    subtitle = "Pooled across 30 imputations for a person with average age and body composition",
+    x = "Appendicular Lean Mass Index (kg/m²)",
+    y = "Predicted Prevalence of Diabetes"
+  ) +
+  theme(legend.position = "bottom")
+```
+
+## Appendix J: Cross Validation
 
 ```{r, eval=FALSE}
 # ----------------------- #
@@ -2215,7 +2469,8 @@ cv_summary_tbl <- cv_summary_long %>%
   ) %>%
   # Add a specific source note explaining the thresholding method
   tab_source_note(
-    source_note = "Optimal threshold, sensitivity, specificity, and accuracy were calculated at the threshold that maximises Youden's J statistic."
+    source_note = "Optimal threshold, sensitivity, specificity, and accuracy were calculated at the threshold that 
+    maximises Youden's J statistic."
   ) %>%
   tab_options(
     table.width = px(600) 
@@ -2270,128 +2525,6 @@ roc_plot <- ggplot(roc_obj, aes(x = FPR, y = TPR)) +
 
 # Display the plot
 roc_plot
-```
-
-## Model Prediction
-
-```{r, eval=FALSE}
-# ----------------- #
-# Model Predictions
-# ----------------- #
-
-# Using progression model 4 to find predictions of the probability of becoming diabetic vs ALMI
-# Predictions will be made on all 30 imputations and then combined using Rubin's Rules
-# Will produce predictions for both male and female
-
-# --- Step 1: Define model and data objects ---
-m <- 30 # Number of imputations
-
-# Use the first imputed dataset as a template for creating the prediction grid
-# This is a safe and standard practice
-template_data <- design_list$imp1$variables
-
-# --- Step 2: Create prediction dataframes (one for each gender) ---
-
-# Create a sequence of Almi values to predict over
-almi_range <- seq(min(template_data$Almi),
-                  max(template_data$Almi),
-                  length.out = 100)
-
-# Base prediction df with average/modal values for all other confounders
-predict_df_base <- data.frame(
-  Almi = almi_range,
-  Age_yrs = mean(template_data$Age_yrs),
-  Race = factor("Non-Hispanic White", levels = levels(template_data$Race)),
-  Bfp_perc = mean(template_data$Bfp_perc),
-  WaistCircum_cm = mean(template_data$WaistCircum_cm)
-)
-
-# Create a specific version for Males
-predict_df_male <- predict_df_base %>%
-  mutate(Gender = factor("Male", levels = levels(template_data$Gender)))
-
-# Create a specific version for Females
-predict_df_female <- predict_df_base %>%
-  mutate(Gender = factor("Female", levels = levels(template_data$Gender)))
-
-# Combine into a single newdata object for easier looping
-predict_df_combined <- rbind(predict_df_male, predict_df_female)
-
-# --- Step 3: Predict on ALL Imputations ---
-# We'll loop through each of the 30 models and get predictions.
-
-prediction_list <- lapply(logistic_progression.4, function(model) {
-  
-  # Get predictions (response = probability) and the standard error for each
-  preds <- predict(model, newdata = predict_df_combined, type = "response", se.fit = TRUE)
-  
-  # Combine the predictors and the predictions into a single dataframe
-  imputation_results <- cbind(predict_df_combined, as.data.frame(preds))
-  
-  return(imputation_results)
-})
-
-# --- Step 4: Pool the Results Using Rubin's Rules ---
-# Now we combine the 30 sets of predictions into one final result.
-
-# First, stack all the dataframes from the list into one big dataframe,
-# adding an ID for each imputation.
-all_predictions <- bind_rows(prediction_list, .id = "imputation_id")
-
-# Now, group by each prediction point and apply Rubin's rules
-plot_data_pooled <- all_predictions %>%
-  # Make sure the SE from predict() is named consistently
-  rename(prevalence = response, se = SE) %>%
-  
-  # Group by each unique combination of predictors
-  group_by(Almi, Age_yrs, Gender, Race, Bfp_perc, WaistCircum_cm) %>%
-  
-  # Apply the pooling formulas
-  summarise(
-    # 1. Average the predicted probabilities
-    pooled_prevalence = mean(prevalence),
-    
-    # 2. Calculate the 'within' imputation variance (average of the variances)
-    within_imputation_var = mean(se^2),
-    
-    # 3. Calculate the 'between' imputation variance (variance of the averages)
-    between_imputation_var = var(prevalence),
-    
-    # 4. Combine them for the total variance
-    total_variance = within_imputation_var + (1 + 1/m) * between_imputation_var,
-    
-    # 5. Get the final pooled standard error
-    pooled_se = sqrt(total_variance),
-    
-    .groups = 'drop' # Ungroup for the next steps
-  ) %>%
-  
-  # 6. Calculate the final 95% confidence interval
-  mutate(
-    lower_ci = pooled_prevalence - 1.96 * pooled_se,
-    upper_ci = pooled_prevalence + 1.96 * pooled_se
-  )
-
-# --- Step 5: Create the final plot with two lines ---
-
-ggplot(plot_data_pooled, aes(x = Almi, y = pooled_prevalence, color = Gender, fill = Gender)) +
-  # Add the prediction lines
-  geom_line(linewidth = 1.2) +
-  
-  # Add the confidence ribbons
-  geom_ribbon(aes(ymin = lower_ci, ymax = upper_ci), alpha = 0.2, linetype = "blank") +
-  
-  # Customize colors and labels
-  scale_color_manual(values = c("Male" = "blue", "Female" = "red")) +
-  scale_fill_manual(values = c("Male" = "blue", "Female" = "red")) +
-  
-  labs(
-    title = "Predicted Prevalence of Diabetes by Muscle Mass (ALMI) and Gender",
-    subtitle = "Pooled across 30 imputations for a person with average age and body composition",
-    x = "Appendicular Lean Mass Index (kg/m²)",
-    y = "Predicted Prevalence of Diabetes"
-  ) +
-  theme(legend.position = "bottom")
 ```
 
 # References

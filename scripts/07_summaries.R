@@ -1,6 +1,165 @@
 # --------------------------------------------- #
-# Model summaries and coefficient visualisation
+# Data & Model summaries and coefficient visualisation
 # --------------------------------------------- #
+
+# Descriptive statistics table of the final analytical sample
+
+# Seek to obtain the mean and standard deviation of each continuous variable, and
+# the count and proportion of each categorical variable from each imputated dataset.
+# The survey structure must be taken into account for these tasks using functions
+# such as svymean for survey-weighted means, and svyvar for survey-weighted variances.
+
+# These statistics will then be pooled and used to produce a consise summary statistics
+# table.
+
+# --- Step 1: Define a function to calculate summary stats for ONE dataset ---
+get_summary_stats <- function(design) {
+  # --- Continuous Variables ---
+  continuous_vars <- c("Age_yrs", "Almi", "WaistCircum_cm", "Bfp_perc", 
+                       "FamIncPov_Ratio", "HEI", "Phys", "AvgNightlySleep", "Hba1c_perc")
+  
+  cont_summary <- map_df(continuous_vars, ~{
+    mean_val <- svymean(as.formula(paste0("~", .x)), design, na.rm = TRUE)
+    var_val <- svyvar(as.formula(paste0("~", .x)), design, na.rm = TRUE)
+    tibble(
+      Variable = .x,
+      Mean = as.numeric(coef(mean_val)),
+      SD = sqrt(as.numeric(var_val)),
+      Type = "Continuous"
+    )
+  })
+  
+  # --- Categorical Variables ---
+  categorical_vars <- c("Gender", "Race", "Smoking_Status", "Alcohol_Status")
+  
+  cat_summary <- map_df(categorical_vars, ~{
+    tbl <- svytable(as.formula(paste0("~", .x)), design)
+    props <- prop.table(tbl)
+    tibble(
+      Variable = paste0(.x, ", ", names(tbl)),
+      Prop = as.numeric(props),
+      Type = "Categorical"
+    )
+  })
+  
+  bind_rows(cont_summary, cat_summary)
+}
+
+# --- Step 2: Apply the function to all 30 design objects and pool ---
+# map_df runs the function on each design object and stacks the results.
+pooled_results <- map_df(design_list, get_summary_stats, .id = "imputation")
+
+# Now, calculate the final pooled estimates by averaging across imputations
+final_summary <- pooled_results %>%
+  group_by(Variable, Type) %>%
+  summarise(
+    Pooled_Mean = mean(Mean, na.rm = TRUE),
+    Pooled_SD = mean(SD, na.rm = TRUE),
+    Pooled_Prop = mean(Prop, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# --- Step 3: Format the final table for presentation with gt ---
+# Get total N from the first dataset (it's the same for all)
+total_n <- nrow(imputed_1118[[1]])
+
+# Format the continuous and categorical results separately
+formatted_continuous <- final_summary %>%
+  filter(Type == "Continuous") %>%
+  mutate(Value = sprintf("%.1f (%.1f)", Pooled_Mean, Pooled_SD)) %>%
+  select(Variable, Value)
+
+formatted_categorical <- final_summary %>%
+  filter(Type == "Categorical") %>%
+  mutate(
+    Pooled_N = Pooled_Prop * total_n,
+    Value = sprintf("%.0f (%.1f%%)", Pooled_N, Pooled_Prop * 100)
+  ) %>%
+  select(Variable, Value)
+
+variable_order <- c(
+  "ALMI (kg/m²)", "HbA1c (%)", "Age (years)", 
+  "Male", "Female",
+  "Mexican American", "Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian", "Other Race",
+  "Body Fat Percentage (%)", "Waist Circumference (cm)", 
+  "Ratio of Family Income to Poverty", "Physical Activity (mins/day)", 
+  "Healthy Eating Index", 
+  "Never Drinker", "Former Drinker", "Moderate Drinker", "Heavy Drinker",
+  "Never Smoker", "Former Smoker", "Current Smoker",
+  "Average Nightly Sleep (hours)"
+)
+
+variable_order <- c(
+  # Continuous Variables
+  "Age (years)", "ALMI (kg/m²)", "HbA1c (%)", "Body Fat Percentage (%)",
+  "Waist Circumference (cm)", "Poverty Income Ratio", "Physical Activity (mins/day)",
+  "Healthy Eating Index", "Average Nightly Sleep (hours)",
+  # Categorical Variables
+  "Male", "Female",
+  "Mexican American", "Hispanic", "Non-Hispanic White",
+  "Non-Hispanic Black", "Non-Hispanic Asian", "Other Race",
+  "Never Drinker", "Former Drinker", "Moderate Drinker", "Heavy Drinker",
+  "Never Smoker", "Former Smoker", "Current Smoker"
+)
+
+
+# Combine into the final dataframe for the table
+final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
+  mutate(Variable_Clean = case_when(
+    Variable == "Almi" ~ "ALMI (kg/m²)",
+    Variable == "Hba1c_perc" ~ "HbA1c (%)",
+    Variable == "Age_yrs" ~ "Age (years)",
+    Variable == "Gender, Male" ~ "Male",
+    Variable == "Gender, Female" ~ "Female",
+    Variable == "Race, Mexican American" ~ "Mexican American",
+    Variable == "Race, Other Hispanic" ~ "Hispanic",
+    Variable == "Race, Non-Hispanic White" ~ "Non-Hispanic White",
+    Variable == "Race, Non-Hispanic Black" ~ "Non-Hispanic Black",
+    Variable == "Race, Non-Hispanic Asian" ~ "Non-Hispanic Asian",
+    Variable == "Race, Other Race - Including Multi-Racial" ~ "Other Race",
+    Variable == "Bfp_perc" ~ "Body Fat Percentage (%)",
+    Variable == "WaistCircum_cm" ~ "Waist Circumference (cm)",
+    Variable == "FamIncPov_Ratio" ~ "Poverty Income Ratio",
+    Variable == "Phys" ~ "Physical Activity (mins/day)",
+    Variable == "HEI" ~ "Healthy Eating Index",
+    Variable == "Alcohol_Status, Never Drinker" ~ "Never Drinker",
+    Variable == "Alcohol_Status, Former Drinker" ~ "Former Drinker",
+    Variable == "Alcohol_Status, Moderate Drinker" ~ "Moderate Drinker",
+    Variable == "Alcohol_Status, Heavy Drinker" ~ "Heavy Drinker",
+    Variable == "Smoking_Status, Never Smoker" ~ "Never Smoker",
+    Variable == "Smoking_Status, Former Smoker" ~ "Former Smoker",
+    Variable == "Smoking_Status, Current Smoker" ~ "Current Smoker",
+    Variable == "AvgNightlySleep" ~ "Average Nightly Sleep (hours)",
+    TRUE ~ Variable  # Keep original name if no match
+  )) %>%
+  # Convert the clean Variable name to a factor to enforce order
+  mutate(Variable_Clean = factor(Variable_Clean, levels = variable_order)) %>%
+  # Arrange the data according to the factor levels
+  arrange(Variable_Clean) %>%
+  # Select the final columns for the table
+  select(Variable = Variable_Clean, Value) %>%
+  rename(Characteristic = Variable)
+
+# --- Create the Table ---
+descriptive_tbl_kbl <- kbl(
+  df_reordered,
+  format = "latex",
+  booktabs = TRUE
+) %>%
+  kable_styling(
+    font_size = 9,
+    full_width = FALSE
+  ) %>%
+  pack_rows("Gender", 10, 11) %>%
+  pack_rows("Race", 12, 17) %>%
+  pack_rows("Alcohol Consumption", 18, 21) %>%
+  pack_rows("Smoking Status", 22, 24) %>%
+  footnote(
+    general = "ALMI: Appendicular Lean Mass Index; HbA1c: Hemoglobin A1c.",
+    symbol = "Continuous variables presented as mean (SD), categorical variables presented as n (%).",
+    threeparttable = TRUE, 
+    footnote_as_chunk = TRUE
+  )
 
 # Extracting pooled model ALMI coefficients and confidence intervals
 # Also finding the % change of each ALMI coefficient progressing through the models
@@ -67,6 +226,11 @@ for (i in 2:10) {
   onset.percent.changes.formatted[i] = paste0(sprintf("%.2f", value[i]), "%")
 }
 
+# Array of covariate changes for summary tables
+covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
+                "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
+                "+ Smoking Status", "+ Average Daily Sleep (hrs)")
+
 # Data frame
 onset.summary.df <- data.frame(
   Model = paste("Model", 1:10),
@@ -75,39 +239,35 @@ onset.summary.df <- data.frame(
   `95% Confidence Interval (OR)` = onset.ci.combined,
   `ALMI Coefficient (log OR)` = onset.almi.coeffs,
   `Percentage Change in Coefficient` = onset.percent.changes.formatted,
+  `McFadden Pseudo R²` = onset.pseudo.r2.list,
+  `Archer-Lemeshow GoF Test P-value` = onset.gof.pvalue,
   check.names = FALSE
   
 )
 
 # Creating table
-onset.summary.table <- onset.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`, `ALMI Coefficient (log OR)`),
-    decimals = 3
+onset.summary.table.kbl <- kbl(
+  onset.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, NA, 3, NA, 3, NA, 3, 3),
+  align = c("l", "l", "r", "r", "r", "r", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 8
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
+  add_header_above(
+    c("Odds Ratios, Coefficients, Percentage Changes, and Diagnostics" = 8),
+    bold = FALSE
   ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`, `Percentage Change in Coefficient`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Logtistic Regression Onset Model Results",
-    subtitle = "Relative Risks, Coefficients, and Percentage Changes"
-  ) 
-
-# Print the table
-onset.summary.table
+  column_spec(column = 3, width = "8em") %>%
+  column_spec(column = 3, width = "5em") %>%
+  column_spec(column = 4, width = "7em") %>%
+  column_spec(column = 5, width = "5em") %>%
+  column_spec(column = 6, width = "5em") %>%
+  column_spec(column = 7, width = "5em") %>%
+  column_spec(column = 8, width = "5em")
 
 # ----- PROG SUMMARY TABLE ----- #
 
@@ -137,39 +297,35 @@ prog.summary.df <- data.frame(
   `95% Confidence Interval (OR)` = prog.ci.combined,
   `ALMI Coefficient (log OR)` = prog.almi.coeffs,
   `Percentage Change in Coefficient` = prog.percent.changes.formatted,
+  `McFadden Pseudo R²` = prog.pseudo.r2.list,
+  `Archer-Lemeshow GoF Test P-value` = prog.gof.pvalue,
   check.names = FALSE
   
 )
 
 # Creating table
-prog.summary.table <- prog.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`, `ALMI Coefficient (log OR)`),
-    decimals = 3
+prog.summary.table.kbl <- kbl(
+  prog.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, NA, 3, NA, 3, NA, 3, 3),
+  align = c("l", "l", "r", "r", "r", "r", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 8
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
+  add_header_above(
+    c("Odds Ratios, Coefficients, Percentage Changes, and Diagnostics" = 8),
+    bold = FALSE
   ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`, `Percentage Change in Coefficient`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Logistic Regression Progression Model Results",
-    subtitle = "Odds Ratios, Coefficients, and Percentage Changes"
-  ) 
-
-# Print the table
-prog.summary.table
+  column_spec(column = 3, width = "8em") %>%
+  column_spec(column = 3, width = "5em") %>%
+  column_spec(column = 4, width = "7em") %>%
+  column_spec(column = 5, width = "5em") %>%
+  column_spec(column = 6, width = "5em") %>%
+  column_spec(column = 7, width = "5em") %>%
+  column_spec(column = 8, width = "5em")
 
 # --- Summary tables of all model coefficients from the fully adjusted models --- #
 
@@ -290,34 +446,21 @@ onset.adjusted.summary.df <- onset.forest.plot.data[,c(1,5)] %>%
   )
 
 # Creating table
-onset.adjusted.summary.tbl <- onset.adjusted.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`),
-    decimals = 3
+onset.adjusted.summary.tbl.kbl <- kbl(
+  onset.adjusted.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, 3, NA),
+  align = c("l", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 10
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Predictor)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Fully Adjusted Onset Model",
-    subtitle = "Coefficient Estimates and 95% Confidence Intervals"
+  add_header_above(
+    c("Coefficient Estimates and 95% Confidence Intervals" = 3),
+    bold = FALSE
   ) 
-
-# Print the table
-onset.adjusted.summary.tbl
 
 # Progression Model 10
 
@@ -401,31 +544,18 @@ prog.adjusted.summary.df <- prog.forest.plot.data[,c(1,5)] %>%
   )
 
 # Creating table
-prog.adjusted.summary.tbl <- prog.adjusted.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`),
-    decimals = 3
+prog.adjusted.summary.tbl.kbl <- kbl(
+  prog.adjusted.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, 3, NA),
+  align = c("l", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 10
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Predictor)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Fully Adjusted Progression Model",
-    subtitle = "Coefficient Estimates and 95% Confidence Intervals"
+  add_header_above(
+    c("Coefficient Estimates and 95% Confidence Intervals" = 3),
+    bold = FALSE
   ) 
-
-# Print the table
-prog.adjusted.summary.tbl

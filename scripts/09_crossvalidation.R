@@ -167,44 +167,30 @@ cv_summary_long <- data.frame(
   )
 )
 
-# Build the final gt table
-cv_summary_tbl <- cv_summary_long %>%
-  gt() %>%
-  # Add the main title and subtitle
-  tab_header(
-    title = md("**Results of 5-fold Cross-Validation Repeated 10 Times**"),
-    subtitle = "Fitting Progression Model 4 to Imputation 1"
-  ) %>%
-  # Format the numbers in the 'Value' column
-  fmt_number(
-    columns = Value,
-    rows = 1:2, # Format AUC and Threshold as numbers
-    decimals = 3
-  ) %>%
-  fmt_percent(
-    columns = Value,
-    rows = 3:5, # Format Sens, Spec, and Accuracy as percentages
-    decimals = 2
-  ) %>%
-  # Hide the default column labels to keep the table clean
-  cols_label(
-    Metric = "",
-    Value = ""
-  ) %>%
-  # Add a source note for the overall method
-  tab_source_note(
-    source_note = "All metrics are averages from 10-times repeated 5-fold cross-validation."
-  ) %>%
-  # Add a specific source note explaining the thresholding method
-  tab_source_note(
-    source_note = "Optimal threshold, sensitivity, specificity, and accuracy were calculated at the threshold that maximises Youden's J statistic."
-  ) %>%
-  tab_options(
-    table.width = px(600) 
+# Identify which metrics should be formatted as percentages
+percent_metrics <- c("Sensitivity", "Specificity", "Weighted Accuracy")
+
+# Create a new, formatted data frame
+cv_results_formatted_df <- cv_summary_long %>%
+  mutate(
+    Value = case_when(
+      # For percentage metrics, multiply by 100 and add a '%' sign
+      Metric %in% percent_metrics ~ sprintf("%.2f%%", Value * 100),
+      # For all others, format to 3 decimal places
+      TRUE ~ sprintf("%.3f", Value)
+    )
   )
 
-# Display table
-cv_summary_tbl
+# Build table
+cv_summary_tbl_kbl <- kbl(
+  cv_results_formatted_df,
+  format = "latex",
+  booktabs = TRUE
+) %>%
+  kable_styling(
+    font_size = 15,
+    full_width = FALSE
+  )
 
 # ----- Visualising ROC Curve ----- #
 

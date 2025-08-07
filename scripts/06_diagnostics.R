@@ -188,104 +188,11 @@ prog.pseudo.r2.list <- sapply(prog.model.names, function(name) {
 # Show results
 print(prog.pseudo.r2.list)
 
-# ---- Diagnostics tables ---- #
-
-# Array of covariate changes for diagnostic and summary tables
-covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
-                "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
-                "+ Smoking Status", "+ Average Daily Sleep (hrs)")
-
-# Onset
-
-# Removing array element names
+# Removing array element names for each pseudo R^2 list
 names(onset.pseudo.r2.list) <- NULL
-
-# Data frame
-onset.diag.df <- data.frame(
-  Model = paste("Model", 1:10),
-  `Covariate Changes` = covariates,
-  `McFadden Pseudo R²` = onset.pseudo.r2.list,
-  `Archer-Lemeshow GoF Test P-value` = onset.gof.pvalue,
-  check.names = FALSE
-)
-
-# Creating table
-onset.diag.table <- onset.diag.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`McFadden Pseudo R²`),
-    decimals = 3
-  ) %>%
-  
-  # Format p-values in scientific notation
-  fmt_number(
-    columns = `Archer-Lemeshow GoF Test P-value`,
-    decimals = 3
-  ) %>%
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`McFadden Pseudo R²`, `Archer-Lemeshow GoF Test P-value`)
-  ) %>%
-  
-  # Add a title and subtitle (optional)
-  tab_header(
-    title = "Diagnostics of Logistic Regression Onset Models",
-    subtitle = "McFadden Pseudo R² and Archer-Lemeshow GoF Test P-value"
-  ) 
-
-# Print the table
-onset.diag.table
-
-# Prog
-
-# Removing array element names
 names(prog.pseudo.r2.list) <- NULL
 
-# Data frame
-prog.diag.df <- data.frame(
-  Model = paste("Model", 1:10),
-  `Covariate Changes` = covariates,
-  `McFadden Pseudo R²` = prog.pseudo.r2.list,
-  `Archer-Lemeshow GoF Test P-value` = prog.gof.pvalue,
-  check.names = FALSE
-)
-
-# Creating table
-prog.diag.table <- prog.diag.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`McFadden Pseudo R²`, `Archer-Lemeshow GoF Test P-value`),
-    decimals = 3
-  ) %>%
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`McFadden Pseudo R²`, `Archer-Lemeshow GoF Test P-value`)
-  ) %>%
-  
-  # Add a title and subtitle (optional)
-  tab_header(
-    title = "Diagnostics of Logistic Regression Progression Models",
-    subtitle = "McFadden Pseudo R² and Archer-Lemeshow GoF Test P-value"
-  ) 
-
-# Print the table
-prog.diag.table
+# The computed diagnostic statistics are compiled into concise summary tables in script 7 (summaries)
 
 # --- Residual Diagnostics --- #
 
