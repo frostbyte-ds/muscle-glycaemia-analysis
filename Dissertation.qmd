@@ -7,13 +7,19 @@ format:
     latex-engine: xelatex
     fontsize: 12pt
     geometry: "left=2cm, right=2cm, top=3cm, bottom=3cm"
-    keep-tex: true
+    fig-pos: 'H'
 toc: true
 toc-depth: 4
 include-in-header:
       text: |
         \usepackage{amsmath}
-
+        \usepackage{float}
+        \usepackage{chngcntr}
+        \counterwithout{figure}{section}
+        \counterwithout{table}{section}
+        \usepackage{etoolbox}
+        \patchcmd{\chapter}{\cleardoublepage}{}{}{}
+        \patchcmd{\chapter}{\clearpage}{}{}{}
 editor: visual
 bibliography: References.bib
 csl: acm.csl
@@ -21,8 +27,6 @@ csl: acm.csl
 
 ```{r, message=FALSE, include=FALSE}
 
-library(gt)
-library(tidyverse)
 library(gridExtra)
 library(ggthemes)
 library(systemfonts)
@@ -66,7 +70,7 @@ load("report_assets.RData")
 
 # Introduction
 
-# Methodology
+# Methodology {#methodology}
 
 The analytical methods used to investigate the associations of skeletal muscle with glycaemic control involved many sequential stages. The first task was the collection of data from the National Health and Nutrition Examination Survey (NHANES) @nhanes_2024. Following data collection, meticulous creation and harmonisation of various predictor, outcome, and confounding variables was key. Missing data was appropriately handled using a robust multiple imputation strategy, after which, an iterative modelling journey was conducted to identify the most appropriate statistical models for the goal.
 
@@ -156,7 +160,7 @@ To isolate the independent effect of skeletal muscle on glycaemic control it is 
 
 Choosing what confounding variables to include in the models was done based on the backing of the surrounding literature. Some confounders were simple to obtain and required no extensive harmonisation. These variables, and the reasons for including them, are outlined in this section. See Section \ref{process} for details on the inclusion of those variables that required substantial pre-processing.
 
-Key demographic confounders that are included in the analysis are age, gender, and race. Age has an inverse relationship with muscle mass @demo_muscle_2010. Typically peaking in young adulthood, skeletal muscle mass naturally declines with age. This is what is known as sarcopenia. Body composition, including skeletal muscle, differs greatly between males and females. These difference also extend to people of different ethic backgrounds.
+Key demographic confounders that are included in the analysis are age, gender, and race. Age has an inverse relationship with muscle mass @demo_muscle_2010. Typically peaking in young adulthood, skeletal muscle mass naturally declines with age. This is what is known as sarcopenia. Body composition, including skeletal muscle, differs greatly between males and females. These differences also extend to people of different ethnic backgrounds.
 
 Furthermore, increasing age is strongly associated with worsening glycaemic control due to insulin sensitivity decreasing with age @demo_gluc_2005. Sex hormones have been shown to have a strong influence on insulin sensitivity, resulting in differing risk profiles for metabolic disease between men and women, with women appearing to have lower insulin resistance than men @geer_shen_2009. Finally, there is a highly documented disparity in the prevalence of type 2 diabetes between those of differing ethnicities @demo_gluc_2005.
 
@@ -254,8 +258,8 @@ Before conducting the imputation, it was beneficial to define physiologically in
 
 Statistical modelling was carried out following the completion of data processing and multiple imputation. The primary goal was to test the stage-specific hypothesis of the role of skeletal muscle in glycaemic control. As described in Section \ref{outcome}, this was achieved using a dual-model framework:
 
--   "Onset" models to investigate the transition from normal to elevated HbA1c.
--   "Progression" models to investigate the transition from a non-diabetic to a clinical diabetic state.
+-   Onset models to investigate the transition from normal to elevated HbA1c.
+-   Progression models to investigate the transition from a non-diabetic to a clinical diabetic state.
 
 The use of the `survey` R package was key in fitting models that respected the survey design of the NHANES data. Prior to model fitting, the survey design of each of the 30 imputed datasets was specified using `svydesign`. When fitting the models that respect the survey structure, the survey design object was supplied to the fitting functions rather than the raw datasets.
 
@@ -281,13 +285,15 @@ The complex multi-stage probability sampling design employed by NHANES, in parti
 
 ### Stepwise Model Building {#stepwise}
 
-To understand the influence of different confounders and select a final parsimonious model, a hierarchical model-building approach was employed for both the 'Onset' and 'Progression' outcomes.
+To understand the influence of different confounders and select a final model for both the Onset and Progression outcomes, a hierarchical model-building approach was employed.
 
-This process involved fitting a sequence of ten nested models, where logical blocks of covariates were added at each step. The initial model of the sequence was crude and only contained the primary predictor (ALMI). Each successive model progressively adjusted for demographics, body composition, socioeconomic status, and finally, all lifestyle factors.
+This process involved fitting a sequence of ten nested models, where logical blocks of covariates were added at each step. The initial model of the sequence was crude and only contained the primary predictor (ALMI). Each successive model progressively adjusted for demographics, body composition, socio-economic status, and finally, all lifestyle factors.
 
 A critical aspect of this process was that it was applied across the multiply imputed data. Each of the ten models in the sequence were fitted to all 30 imputed datasets and the results were pooled using Rubin's Rules by using the `MIcombine` function. This resulted in a single, robust set of estimates for each individual model definition.
 
-This systematic model building strategy functioned as a sensitivity analysis, demonstrating how the ALMI coefficient responded to the inclusion of each confounding variable. To formally investigate the statistical mechanism behind these changes, particularly the multicollinearity between the three body composition variables, survey-weighted Variance Inflation Factor (VIF) values were calculated at key steps of the model-building process. This provided a data-driven justification for selecting a final parsimonious model that was both well-fitting and did not possess needless complexity. The final parsimonious models for each outcome were chosen to contain only the confounders that once added, changed the estimation of the ALMI coefficient by 10% or more @tenperc_2019.
+This systematic model building strategy functioned as a sensitivity analysis, demonstrating how the ALMI coefficient responded to the inclusion of each confounding variable. To formally investigate the statistical mechanism behind these changes, particularly the multicollinearity between the three body composition variables, survey-weighted Variance Inflation Factor (VIF) values were calculated at key steps of the model-building process.
+
+The final model for the Progression outcome was chosen to contain only the confounders that, once added, changed the estimation of the ALMI coefficient by 10% or more @tenperc_2019. This provided a data-driven justification for selecting a parsimonious model that was both well-fitting and did not possess needless complexity. Such a model was not chosen for the Onset outcome; instead, the fully adjusted model (Model 10) is presented in Section \ref{results} to show the association of ALMI and glycaemic status after accounting for all potential confounders. The reasons for the differing approach for the different outcomes will become clear in Section \ref{results}.
 
 ## Model Diagnostics {#diag}
 
@@ -303,27 +309,29 @@ A key technical consideration is that a true likelihood, and therefore a true de
 
 McFadden's Pseudo $\text{R}^2$ was calculated for all 30 imputed datasets for each model, and the mean was taken to represent the final statistic for each pooled model. Simply averaging the $\text{R}^2$ values is argued to be more appropriate than pooling using methods such as Rubin's rules @mean_r_2019.
 
-To further assess model validity, visualisations of binned residual plots were used. This was only done using the final parsimonious onset and progression models chosen using the methods outlined in Section \ref{stepwise}.
+To further assess model validity, visualisations of binned residual plots were used. This was only done using the fully adjusted onset model and final parsimonious progression model chosen using the methods outlined in Section \ref{stepwise}.
 
-Residual diagnostics are key in model evaluation to ensure that overdispersion has been well-handled, and to discern whether higher order terms of the covariates are required. Standard residual plots are not useful in a logistic regression context due to the binary outcome variable. Binned residual plots overcome this by grouping observations into bins based on their predicted values and plotting the average residual vs average fitted value in each bin @binnedresids. Any fanning of residuals, clear systematic patterns, or too many points outside the $\pm$ 2 standard error bounds would be a cause for concern and warrant further testing. With regards to the standard error bounds, it is expected that around 95% of points should be contained within them.
+Residual diagnostics are key in model evaluation to ensure that overdispersion has been well-handled, and to discern whether higher order terms of the covariates are required. Standard residual plots are not useful in a logistic regression context due to the binary outcome variable. Binned residual plots overcome this by grouping observations into bins based on their predicted values and plotting the average residual vs average fitted value in each bin @binnedresids. Any clear systematic patterns, or too many points outside the $\pm 2$ standard error bounds would be a cause for concern and warrant further testing. With regards to the standard error bounds, it is expected that around 95% of points should be contained within them.
 
-Binned residual plots were produced using for the linear predictor vs residuals to assess overall model fit, and further component-wise residual plots were produced to more accurately validate the assumption of linear covariates. Due to the multiple imputation framework, linear predictor binned residual plots were produced for each of the first 9 imputed datasets for the required two models. These plots were visualised together to identify any differences between imputations, from which it was discerned that none were significant. Therefore, component-wise residual plots were only formed using the first imputed dataset.
+Binned residual plots were produced using for the linear predictor vs residuals to assess overall model fit, and further component-wise residual plots were produced to more accurately validate the assumption of linear continuous covariates. Due to the multiple imputation framework, linear predictor binned residual plots were produced for each of the first 9 imputed datasets for the required two models. These plots were visualised together to identify any differences between imputations, from which it was discerned that none were significant. Therefore, component-wise residual plots were only formed using the first imputed dataset.
 
-As a final validation check, it was useful to investigate any significant outliers in the data to ensure that model conclusions were robust and not disproportionately influenced by a small number of unusual observations. The primary diagnostics tool for this was Cook's distance, which was calculated for the final parsimonious models using the R function `svyCooksD` to correctly account for the complex survey design.
+As a final validation check, it was useful to investigate any significant outliers in the data to ensure that model conclusions were robust and not disproportionately influenced by a small number of unusual observations. The primary diagnostics tool for this was Cook's distance, which was calculated for the final models using the R function `svyCooksD` to correctly account for the complex survey design.
 
 The first stage of this test was to identify which observations were the most influential. This was done by finding those with the top 1% Cook's distance values from the final onset and progression models. Due to residual diagnostics indicating no significant variation between imputations, this process was done only on the models fit to imputation 1. Next, these models were refit using redefined survey design objects formed using the first imputed dataset with these points removed. The coefficients from the original and refitted models were then compared to assess the stability of the findings.
 
-## Model Prediction
+## Model Prediction {#modpreds}
 
-To aid in the interpretation of the primary significant identified relationships, predicted probabilities were generated. The goal of this process was to clearly illustrate the shape and magnitude of the key associations of skeletal muscle and glycaemic control that were uncovered during the analysis, and the surrounding uncertainty of these findings. Therefore, predictions were generated using the final parsimonious "Progression" model, allowing for a visual representation of the associations of ALMI and the probability of becoming diabetic. This was done separately for males and females due to previously discussed well-documented differences in hormonal profiles and body composition between the sexes.
+To aid in the interpretation of the primary significant identified relationships, predicted probabilities were generated. The goal of this process was to clearly illustrate the shape and magnitude of the key associations of skeletal muscle and glycaemic control that were uncovered during the analysis, and the surrounding uncertainty of these findings. Therefore, predictions were generated using the final parsimonious Progression model, allowing for a visual representation of the associations of ALMI and the probability of becoming diabetic. This was done separately for males and females due to previously discussed well-documented differences in hormonal profiles and body composition between the sexes.
+
+Predictions were initially made in the logit scale, and then converted back to the probability scale after the calculation of the confidence intervals. This was done to avoid incorrect calculations of negative confidence intervals.
 
 The initial step was to create a new dataset with the values of each covariate to predict for. A sequence of evenly spaced ALMI values were chosen from the minimum and maximum observed in the data, the continuous covariates such as age and body fat percentage were fixed at their mean, and categorical variables such as race were set to their mode.
 
-To fully capture uncertainty due to missing data, predictions were made across all 30 imputed datasets, and the final point estimate of the prediction was found by taking the mean of these 30 values. To construct meaningful confidence intervals, the within- and between-imputation variance of the predictions were combined using Rubin's Rules variance pooling methods, resulting in a total variance that was used for their formation. The resulting mean predictions and confidence intervals were plotted using `ggplot`. The code for the processes outlined in this section can be seen in Section \ref{predcode}.
+To fully capture uncertainty due to missing data, body fat percentage and waist circumference were fixed at their means over all 30 imputed datasets. The variables of Age and Race did not contain any missing values and were not imputed, therefore, they were assigned their averages from imputation 1. Furthermore, predictions were made across all 30 imputed datasets, and the final point estimate of the prediction was found by taking the mean of these 30 values. To construct meaningful confidence intervals, the within- and between-imputation variance of the predictions were combined using Rubin's Rules variance pooling methods, resulting in a total variance that was used for their formation. The resulting mean predictions and confidence intervals were plotted using `ggplot`. The code for the processes outlined in this section can be seen in Section \ref{predcode}.
 
-## Assessment of Predictive Accuracy (Cross-Validation)
+## Assessment of Predictive Accuracy (Cross-Validation) {#crossval}
 
-The final stage in the methodology of this analysis was to assess the predictive accuracy of the final parsimonious progression model by implementing k-fold cross-validation. This approach was key in determining the generalisability of the model by assessing its performance data other than what it was trained on.
+The final stage in the methodology of this analysis was to assess the predictive accuracy of the final parsimonious Progression model by implementing k-fold cross-validation. This approach was key in determining the generalisability of the model by assessing its performance when tested on data other than what it was trained on.
 
 Due to the computational complexity of running the procedure across all 30 imputed datasets, the cross-validation was conducted on the first imputed dataset as a representative sample. As residual diagnostics confirmed no significant differences between imputations, this is a valid approach.
 
@@ -332,75 +340,138 @@ No R function exists to conduct k-fold cross-validation to assess the performanc
 For each of the 10 repeats, the following stages were carried out for each fold:
 
 1.  The dataset was partitioned into training and testing portions, with 80% allocated for training, and 20% for testing.
-2.  A survey design object was created using the training dataset, and was then used to fit a survey weighted logistic regression model using the same model specification as the final parsimonious progression model.
+2.  A survey design object was created using the training dataset, and was then used to fit a survey weighted logistic regression model using the same model specification as the final parsimonious Progression model.
 3.  The model was then used to generate probability predictions for the training data. An optimal classification threshold was determined by calculating a survey weighted Receiver Operating Classification (ROC) curve on the training predictions and selecting the threshold that maximised Youden's J statistic. This method ensures the greatest distance between sensitivity and the false positive rate, resulting in an optimal balance between sensitivity and specificity @youdens_2024.
 4.  The model, trained in Step 2, and the optimal threshold, determined in Step 3, were applied to the test data, classifying observations as either diabetic or non-diabetic.
 5.  Based on the results, performance metrics were calculated on the test set. The primary metric was the Area Under the Curve (AUC), which quantified the model's ability to distinguish between the two classes on a scale from 0.5 to 1. An AUC of 0.5 means a model has no discriminatory power, whereas an AUC of 1 indicates perfect classification. AUC values of above 0.8 are considered to indicate that a model has clinical utility @auc_2023. Further measures of performance such as sensitivity, specificity, and overall accuracy were also stored. The process of calculating performance metrics required careful consideration of the survey design using functions such as `WeightedAUC` for survey weighted AUCs, `svymean` for calculation of weighted errors, and `svytable` for weighted confusions matrices.
 
 The mean performance metrics from each repeat were averaged to produce the final estimates of the model's predictive performance. To further aid in the understanding of the procedure, the ROC curve from the final iteration of the cross-validation was plotted and labelled with the optimal threshold and AUC.
 
-# Results
+# Results {#results}
+
+This chapter will present the findings of the analytical processes outlined in the methodology. It will begin by providing a broad summary of the final analytical sample formed by the diligent data processing discussed in Section \ref{vars}, followed by the results of the hierarchical model building procedure that led to the choice of the final models. Inferences of the final models are then presented, detailing the key findings that they have made possible. Finally, the results of model-based prediction and a thorough assessment of the predictive accuracy of the final parsimonious Progression model are shown.
+
+## Descriptive Statistics of the Analytical Sample
+
+Once the raw data had been fully processed and all missing values had been imputed, the final analytical sample consisted of 12,178 participants between the ages of 18 and 59. The pooled, survey-weighted characteristics of the sample are presented in @tbl-desc.
 
 ```{r, echo=FALSE}
 #| label: tbl-desc
 #| tbl-cap: "Pooled Characteristics of the Final Analytical Sample"
 #| tbl-pos: "!h"
 
-descriptive_tbl_kbl
-
+descriptive.tbl.kbl
 ```
+
+The mean age of participants in the sample was 39.0 years (SD = 12.3), indicating a wide age distribution representative of the adult US population. 51.7% of the sample were female. The population was predominantly Non-Hispanic White (61.9%), with the second most populous group being Non-Hispanic Black (12.3%), and the remaining groups each comprising under 10% of the sample.
+
+The mean value of the primary predictor, ALMI, was 8.0 kg/m² (SD = 1.7), and the mean HbA1c was 5.5% (SD = 0.9). The distribution of the outcome variables for the Onset and Progression models showed that 76% of the population were in the normal healthy range of blood glucose levels, leaving 24% in the elevated range ($\geq$ 5.7%). In addition, 94% had HbA1c levels below the diabetic threshold, meaning 6% were in the range of clinical diabetes ($\geq$ 6.5%).
+
+Body composition characteristics showed considerable variability, with a mean body fat percentage of 33.5% (SD = 8.7) and a mean waist circumference of 98.7 cm (SD = 17.4). The mean ratio of family income to poverty was 2.9 (SD = 1.7), reflecting a wide spectrum of socio-economic conditions across the sample.
+
+Lifestyle factors also varied substantially. The mean Healthy Eating Index score was 52.6 (SD = 13.5), and the average nightly sleep was 7.2 hours (SD = 1.4). Of particular note, recreational physical activity levels were highly skewed. While the mean was 55 minutes per day, the large standard deviation of 75.1 minutes indicates that many participants reported little to no activity, while a smaller number of highly active individuals significantly influenced the average.
+
+The vast majority of the cohort were classified as "moderate" drinkers, with this group containing 75.8% of the sample. Only 2.2% of participants were "heavy" drinkers, 10.6% were former drinkers, and 11.5% had never consumed an alcoholic beverage. The significant number of people in the "Former Drinker" category, namely 1291, highlights the importance of handling the "sick-quitter" bias. In contrast, the majority of individuals had never smoked cigarettes, with the "Never Smoker" category consisting of 60.6% of the population. 19.3% of people were former smokers, leaving 20.2% as current smokers.
+
+## Hierarchical Model Building and Final Model Selection
+
+The methodological and hierarchical model-building process used to understand the influence of various confounding variables, and to choose robust final models for both the Onset and Progression outcomes is summarised in @tbl-onsetsum and @tbl-progsum respectively. These tables track the change in the ALMI coefficient, its odds ratio, and key model diagnostics as logical blocks of, and individual variables were sequentially added, and allow for a comprehensive understanding of why the final models were chosen. Each model is the result of pooling across all 30 imputations as outlined in Section \ref{stepwise}.
 
 ```{r, echo=FALSE}
 #| label: tbl-onsetsum
 #| tbl-cap: "Summary of Logistic Regression Pooled Onset Models"
 #| tbl-pos: "!h"
 
-
 onset.summary.table.kbl
 ```
+
+The stepwise model-building of the Onset models summarised in @tbl-onsetsum illustrates how, before adjusting for any confounders in the crude model, the odds ratio of ALMI was 1.29 with a 95% CI of \[1.240, 1.342\]. This implies that higher levels of skeletal muscle are associated with an increase in the odds of having elevated HbA1c by 29%. This result is counter-intuitive and comes as a result of a failure to control for confounding. The inclusion of the demographic variables and body fat percentage resulted in significant fluctuations of the ALMI coefficient, where significant is defined as a change larger than 10%; however, it still remained positive and statistically significant, resulting in odds ratios larger
+
+In Model 4, once waist circumference was added into the model, the ALMI coefficient became statistically insignificant, with it's 95% CI containing 1 on the odds ratio scale. The addition of any further covariates up to the fully adjusted Model 10 did not alter this, with ALMI remaining insignificant. The introduction of waist circumference leading to ALMI becoming insignificant in the model indicates that the initial positive association was driven by confounding from central adiposity. The models prior to model 4 discerned that in the sample, people with more muscle also tended to have other characteristics that increased their risk, specifically a larger waist.
+
+The McFadden Pseudo $R^2$ values can be seen to increase throughout the stepwise process. The addition of the demographic variables resulted in its largest jump from 0.033 to 0.165. The fully adjusted Model 10 had a value of 0.196, meaning that even after comprehensive adjustment of all confounders, it still cannot be thought to have an "excellent" fit, as discussed in Section \ref{diag}. Importantly, the Archer-Lemeshow goodness-of-fit tests were non-significant for all ten models (all p \> 0.05), confirming that each model in the sequence was well-calibrated.
+
+The "Percentage Change in Coefficient" column demonstrates the sensitivity of the ALMI coefficient to the sequential addition of confounders. While the coefficient's estimate continued to change by more than 10% in subsequent models, this criterion is no longer a meaningful guide for selecting a parsimonious model once the primary association had been fully attenuated. Since the effect of ALMI became statistically insignificant in Model 4 and remained so thereafter, the 10% rule was not used to select a final model for this outcome.
+
+The primary finding from the Onset modelling process is that ALMI is not significantly associated with glycaemic dysregulation. A final model must show that this result holds with appropriate confounder adjustment, therefore, the fully adjusted Model 10 is chosen in this case.
 
 ```{r, echo=FALSE}
 #| label: tbl-progsum
 #| tbl-cap: "Summary of Logistic Regression Pooled Progression Models"
 #| tbl-pos: "!h"
 
-
 prog.summary.table.kbl
 ```
 
+The immediate difference between the results of the Onset and Progression outcomes is that in the Progression setting seen in @tbl-progsum, the ALMI coefficient is statistically significant for every iteration of the model-building process. This implies that ALMI is associated with the transition to clinical diabetes, therefore, the goal is to select a final model that adjusts for confounding while avoiding unnecessary complexity. This will be done using the 10% rule. The final model can then be used to make a conclusive statement regarding the association of skeletal muscle and the odds of becoming diabetic.
+
+The paradoxical positive association seen in the crude Onset model (Model 1) also translates to the crude Progression model. Here, ALMI is associated with a 39% increase in the odds of becoming diabetic, with a 95% CI of \[1.319, 1.463\]. As also seen with the Onset models, this counter-intuitive finding persists after adjusting for key demographics and body fat percentage.
+
+Where the Progression models differ from the Onset models comes after the inclusion of waist circumference in Model 4. Where the Onset Model 4 saw the association for ALMI lose statistical significance, the Progression Model 4 results in its dramatic inversion to a statistically significant and protective odds ratio of 0.788, with a 95% CI of \[0.683, 0.910\]. This represents a -162.6% change in the coefficient, providing clear evidence of the strong confounding effect of waist circumference that was masking the true protective role of muscle mass in the simpler models.
+
+As further lifestyle and socio-economic confounders were added in Models 5 through 10, the odds ratio for ALMI remained stable and statistically significant, confirming the robustness of this protective association. After Model 4, the inclusion of further predictors did not change the coefficient for ALMI by more than 6%. The final, fully adjusted model (Model 10) yielded an odds ratio of 0.796.
+
+The survey-weighted variance inflation factors (VIFs), calculated for Onset and Progression Models 3 an 4, provide a clear statistical explanation for the observed coefficient changes. In Model 3 for both outcomes, which did not include waist circumference, all VIF values were below 2.5, demonstrating no significant multicollinearity. However, upon the inclusion of waist circumference in Model 4, the VIF values for the three body composition variables rose sharply, confirming a high degree of multicollinearity (VIFs of 4.5, 6.5, and 7 for the Onset model; 6, 6, and 9 for the Progression model).
+
+This finding provides further justification for the observed results that the inclusion of waist circumference was necessary for the independent effect of muscle mass to be brought to light. Its inclusion in the Onset models unmasked the true null association of muscle mass and the initial onset of elevated blood glucose; whereas, for the the Progression models, it unveiled the true protective effect of muscle against clinical diabetes.
+
+The McFadden's Pseudo $R^2$ values increased in a similar manner as they did throughout the Onset models, with the largest increase being from 0.044 to 0.157 from Model 1 to Model 2. However, from Model 4 onwards, they reached values of above 0.2, indicating an "excellent" fit. The Archer-Lemeshow goodness-of-fit tests were non-significant for all 10 models (p \> 0.05), meaning than every model was well-calibrated.
+
+The final Progression model from which conclusions can be drawn from is Model 4. This is due the ALMI coefficient changing by no more than 6% from the inclusion of any further covariates, justifying the choice of Model 4 on the basis of parsimony. This model contains only the predictors that are significant confounders of the association of muscle and diabetic status. The odds ratio of ALMI in Model 4 can be used to infer that an increase in ALMI by 1 kg/m² is associated with a 21.2% reduction in the odds of progressing to diabetic levels of blood glucose.
+
+## Final Model Validation and Robustness Checks
+
+Residual diagnostics and influential point analyses are included to confirm the validity of the final models and ensure the robustness of their findings.
+
+The binned residual plots in @fig-onsetResids show no significant patterns, with the majority of the residuals falling within the grey bands. This indicates that the final Onset model is well-specified. In addition, there are no clear differences between the residuals of each imputation, meaning that the imputation strategy is robust.
+
+![Onset Model 10 Binned Residual Plots for Imputations 1-9](onsetResids.png){#fig-onsetResids}
+
+The component-wise binned residual plots for Onset Model 10 in @fig-onsetVarResids evidence that the assumptions of linear covariates in the model are justified. There are no clear curves in the residuals that would suggest higher order terms of covariates would provide significant advantages. The pattern of large residuals seen in the physical activity plot is likely a product of data sparsity at the extreme end of the distribution, and is not a cause for concern. Furthermore, there is fanning of the residuals, particularly in the plot for age; however, this is also not a concern, as the quasibinomial model framework is appropriately handling the potential overdispersion that these plots highlight. Only imputation 1 was used for these plots due to @fig-onsetResids providing strong evidence of stability across imputations.
+
+![Onset Model 10 Component-Wise Binned Residual Plots for Imputation 1](onsetVarResids.png){#fig-onsetVarResids}
+
+As seen in @fig-progResids, the residuals for the final Progression model also show no systematic patterns, stay mostly within the grey $\pm 2$ standard error boundaries, and are consistent across imputations, suggesting the model is well-defined and robust.
+
+![Progression Model 4 Binned Residual Plots for Imputations 1-9](progResids.png){#fig-progResids}
+
+Finally, the component-wise binned residual plots for Progression Model 4 in @fig-progVarResids also suggest that the assumption of linear covariates is valid, with no systematic patterns visible in any plot. As was the case for the Onset component wise residual plots, these were formed using only imputation 1 due to the plots in @fig-progResids demonstrating consistency over imputations.
+
+![Progression Model 4 Component-Wise Binned Residual Plots for Imputation 1](progVarResids.png){#fig-progVarResids}
+
+In addition to the residual diagnostics confirming the validity of the final models for both outcomes, the results of the influential points analysis also do so.
+
+In addition to the residual diagnostics, both Onset Model 10 and Progression Model 4 were refit using reduced datasets that no longer contained the observations that were in the top 1% of Cook's Distance of their original fits. The ALMI coefficient was still statistically insignificant in Onset Model 10, and was equal to -0.235, corresponding to an odds ratio of 0.79, and statistically significant in Progression Model 4. This meant that the finding of both models are robust and are not driven by extreme outliers in the data.
+
+## Visualising the Association between ALMI and Diabetes
+
+To visualise the shape and magnitude of the association of skeletal muscle mass and diabetes, Progression Model 4 was used to generate probability predictions of becoming diabetic for a range of ALMI values, while holding age, race, and body composition constant at their average across all imputations. This was done for both males and females, as discussed in \ref{modpreds}. The results of the model predictions are seen in @fig-predPlot.
+
 ```{r, echo=FALSE}
-#| label: tbl-onsetadj
-#| tbl-cap: "Summary of Fully Adjusted Pooled Onset Model"
-#| tbl-pos: "!h"
+#| label: fig-predPlot
+#| fig-cap: "Predicted probability of diabetes across the range of Appendicular Lean Mass Index (ALMI), stratified by gender. Predictions are generated from Progression Model 4, holding all other covariates constant at their mean or mode. Solid lines represent the pooled mean prediction, and the shaded areas represent the corresponding 95% confidence intervals."
 
-
-onset.adjusted.summary.tbl.kbl
+pred.plot
 ```
 
-```{r, echo=FALSE}
-#| label: tbl-progadj
-#| tbl-cap: "Summary of Fully Adjusted Pooled Progression Model"
-#| tbl-pos: "!h"
+This diagram clearly illustrates the strong protective effect that skeletal muscle has against the likelihood of becoming diabetic, with higher values of ALMI corresponding to lower predicted probabilities. The trend for both men and women is non-linear, with both curves demonstrating a shape similar to exponential decay. Women appear to have a higher probability of diabetes for all amounts of skeletal muscle, with the red mean prediction line always above the blue. However, for ALMI below approximately 5 kg/m² and above 10 kg/m², there is overlap of the confidence intervals between both genders, implying the probability differences between genders is less certain here. The red curve being steeper than the blue also suggests that the protective effects of skeletal muscle are perhaps stronger in women. 
 
+The predicted probability at the lowest level of ALMI present in the data (2.1 kg/m²) was 0.1 for females and 0.04 for males; however, predictions made at lower levels of ALMI carry a high degree of uncertainty, highlighted by the large confidence intervals at these levels. This uncertainty is likely due to the lack of data in this range of ALMI. There were only 5 individuals ALMI below 5 kg/m² in the first imputed dataset. This is assumed to not be significantly different across all other imputations, leading to the wide confidence intervals.
 
-prog.adjusted.summary.tbl.kbl
-```
+Conversely, for ALMI above around 5 kg/m², the confidence intervals are much narrower, meaning predictions here are much more precise. Across all imputed datasets, the mean value of ALMI for females was 7.2 kg/m², and 9.0 kg/m² for men. The predicted probability of becoming diabetic for females at their mean ALMI was 0.03, and for men it was 0.007.
+
+While the data was also sparse for large ALMI (only 9 individuals had more than 15 kg/m²), the confidence intervals in this range maintain their restricted width. This is due to a mathematical property of probability. As the model's predicted probability of diabetes approaches its absolute floor of zero, the potential for variance is naturally compressed. Therefore, the confidence interval is forced to be narrow, as the lower bound is anchored near zero, and the upper bound is unable to significantly vary due to the already low point estimate.
+
+## Cross-Validation Performance
+
+This final subsection of the results will evaluate the findings of the cross-validation approach outlined in Section \ref{crossval} to determine Progression Model 4's generalisability and clinical usability for classification. These findings are summarised in @tbl-cvtable.
 
 ```{r, echo=FALSE}
 #| label: tbl-cvtable
 #| tbl-cap: "Results of 5-fold Cross-Validation Repeated 10 Times"
 #| tbl-pos: "!h"
 
-
 cv_summary_tbl_kbl
-```
-
-```{r, echo=FALSE}
-#| label: predPlot
-#| fig-cap: "Predictions"
-
-pred.plot
-
 ```
 
 ```{r, echo=FALSE}
@@ -408,7 +479,6 @@ pred.plot
 #| fig-cap: "ROC Curve"
 
 roc_plot
-
 ```
 
 # Discussion
@@ -1279,8 +1349,6 @@ for (i in 1:10) {
   # Select the current list of model fits
   onset.model.list <- all_onset_model_lists[[i]]
   
-  # --- This is existing, correct code for pooling the F-test ---
-  
   # Initialize an empty vector for F-statistics for the current model
   onset.f.statistics <- c()
   
@@ -1294,10 +1362,10 @@ for (i in 1:10) {
     
     # Extract and store the F-statistic
     onset.f.statistics[j] <- gof_test_result$Ftest
-    
-    # Numerator degrees of freedom (df1)
-    df1 <- gof_test_result$df
   }
+  
+  # Numerator degrees of freedom (df1)
+  df1 <- gof_test_result$df
   
   # Pool the F-statistics for the current model
   pooled_gof_test <- micombine.F(onset.f.statistics, df1 = df1)
@@ -1340,8 +1408,6 @@ for (i in 1:10) {
   # Select the current list of model fits
   prog.model.list <- all_prog_model_lists[[i]]
   
-  # --- This is existing, correct code for pooling the F-test ---
-  
   # Initialize an empty vector for F-statistics for the current model
   prog.f.statistics <- c()
   
@@ -1355,10 +1421,10 @@ for (i in 1:10) {
     
     # Extract and store the F-statistic
     prog.f.statistics[j] <- gof_test_result$Ftest
-    
-    # Numerator degrees of freedom (df1)
-    df1 <- gof_test_result$df
   }
+  
+  # Numerator degrees of freedom (df1)
+  df1 <- gof_test_result$df
   
   # Pool the F-statistics for the current model
   pooled_gof_test <- micombine.F(prog.f.statistics, df1 = df1)
@@ -1414,104 +1480,11 @@ prog.pseudo.r2.list <- sapply(prog.model.names, function(name) {
 # Show results
 print(prog.pseudo.r2.list)
 
-# ---- Diagnostics tables ---- #
-
-# Array of covariate changes for diagnostic and summary tables
-covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
-                "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index",
-                "+ Alcohol Status", "+ Smoking Status", "+ Average Daily Sleep (hrs)")
-
-# Onset
-
-# Removing array element names
+# Removing array element names for each pseudo R^2 list
 names(onset.pseudo.r2.list) <- NULL
-
-# Data frame
-onset.diag.df <- data.frame(
-  Model = paste("Model", 1:10),
-  `Covariate Changes` = covariates,
-  `McFadden Pseudo R²` = onset.pseudo.r2.list,
-  `Archer-Lemeshow GoF Test P-value` = onset.gof.pvalue,
-  check.names = FALSE
-)
-
-# Creating table
-onset.diag.table <- onset.diag.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`McFadden Pseudo R²`),
-    decimals = 3
-  ) %>%
-  
-  # Format p-values in scientific notation
-  fmt_number(
-    columns = `Archer-Lemeshow GoF Test P-value`,
-    decimals = 3
-  ) %>%
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`McFadden Pseudo R²`, `Archer-Lemeshow GoF Test P-value`)
-  ) %>%
-  
-  # Add a title and subtitle (optional)
-  tab_header(
-    title = "Diagnostics of Logistic Regression Onset Models",
-    subtitle = "McFadden Pseudo R² and Archer-Lemeshow GoF Test P-value"
-  ) 
-
-# Print the table
-onset.diag.table
-
-# Prog
-
-# Removing array element names
 names(prog.pseudo.r2.list) <- NULL
 
-# Data frame
-prog.diag.df <- data.frame(
-  Model = paste("Model", 1:10),
-  `Covariate Changes` = covariates,
-  `McFadden Pseudo R²` = prog.pseudo.r2.list,
-  `Archer-Lemeshow GoF Test P-value` = prog.gof.pvalue,
-  check.names = FALSE
-)
-
-# Creating table
-prog.diag.table <- prog.diag.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`McFadden Pseudo R²`, `Archer-Lemeshow GoF Test P-value`),
-    decimals = 3
-  ) %>%
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`McFadden Pseudo R²`, `Archer-Lemeshow GoF Test P-value`)
-  ) %>%
-  
-  # Add a title and subtitle (optional)
-  tab_header(
-    title = "Diagnostics of Logistic Regression Progression Models",
-    subtitle = "McFadden Pseudo R² and Archer-Lemeshow GoF Test P-value"
-  ) 
-
-# Print the table
-prog.diag.table
+# The computed diagnostic statistics are compiled into concise summary tables in script 7 (summaries)
 
 # --- Residual Diagnostics --- #
 
@@ -1521,37 +1494,65 @@ prog.diag.table
 
 # binnedplot in the arm package is ideal for this case
 
+# Seek to plot binned residuals of the fully adjusted onset model and parsimonious progression model
+# for the first 9 imputations to assess model fit and if there are any significant
+# differences between imputed datasets
+
 # Onset
-binnedplot(fitted(logistic_onset.4$imp1), 
-           residuals(logistic_onset.4$imp1, type = "response"), 
-           nclass = NULL, 
-           xlab = "Expected Values", 
-           ylab = "Average residual", 
-           main = "Binned residual plot", 
-           cex.pts = 0.8, 
-           col.pts = 1, 
-           col.int = "gray")
+par(mfrow = c(3, 3))
+
+# Loop through the first 9 imputations for the onset model
+for (i in 1:9) {
+  # Assuming logistic_onset.4 is a list of model fits
+  model_fit <- logistic_onset.10[[i]]
+  
+  binnedplot(
+    fitted(model_fit),
+    residuals(model_fit, type = "response"),
+    nclass = NULL,
+    xlab = "Expected Values",
+    ylab = "Average residual",
+    main = paste("Onset Model - Imputation", i), # Add a dynamic title
+    cex.pts = 0.8,
+    col.pts = 1,
+    col.int = "gray"
+  )
+}
 
 # Progression
-binnedplot(fitted(logistic_progression.4$imp1), 
-           residuals(logistic_progression.4$imp1, type = "response"), 
-           nclass = NULL, 
-           xlab = "Expected Values", 
-           ylab = "Average residual", 
-           main = "Binned residual plot", 
-           cex.pts = 0.8, 
-           col.pts = 1, 
-           col.int = "gray")
+
+# Loop through the first 9 imputations for the progression model
+for (i in 1:9) {
+  # Assuming logistic_progression.4 is a list of model fits
+  model_fit <- logistic_progression.4[[i]]
+  
+  binnedplot(
+    fitted(model_fit),
+    residuals(model_fit, type = "response"),
+    nclass = NULL,
+    xlab = "Expected Values",
+    ylab = "Average residual",
+    main = paste("Progression Model - Imputation", i), # Add a dynamic title
+    cex.pts = 0.8,
+    col.pts = 1,
+    col.int = "gray"
+  )
+}
+
+par(mfrow = c(1, 1))
 
 # Both look good - residuals fine
+# No significant differences between imputations
 
 # Now creating binned component + residual plots to justify the choice of linear
 # covariates in both models
 
+# Only using imputation 1 here
+
 # Onset
 
 # Get the working residuals and the specific predictor
-onset.model.fit <- logistic_onset.4$imp1
+onset.model.fit <- logistic_onset.10$imp1
 onset.y.outcome <- onset.model.fit$survey.design$variables$at_risk_or_worse
 onset.mu.fitted <- fitted(onset.model.fit)
 onset.working.residuals <- (onset.y.outcome - onset.mu.fitted) / onset.mu.fitted
@@ -1560,9 +1561,13 @@ onset.almi.data <- onset.model.fit$survey.design$variables$Almi
 onset.age.data <- onset.model.fit$survey.design$variables$Age_yrs
 onset.bfp.data <- onset.model.fit$survey.design$variables$Bfp_perc
 onset.waistcircum.data <- onset.model.fit$survey.design$variables$WaistCircum_cm
+onset.pir.data <- onset.model.fit$survey.design$variables$FamIncPov_Ratio
+onset.phys.data <- onset.model.fit$survey.design$variables$Phys
+onset.hei.data <- onset.model.fit$survey.design$variables$HEI
+onset.sleep.data <- onset.model.fit$survey.design$variables$AvgNightlySleep
 
 # Create the binned plot of residuals vs. the predictor
-par(mfrow = c(2, 2))
+par(mfrow = c(2, 4))
 binnedplot(x = onset.almi.data, y = onset.working.residuals,
            xlab = "ALMI (kg/m²)",
            ylab = "Average Working Residual",
@@ -1582,6 +1587,26 @@ binnedplot(x = onset.waistcircum.data, y = onset.working.residuals,
            xlab = "Waist Circumference (cm)",
            ylab = "Average Working Residual",
            main = "Binned Residuals vs. Waist Circumference")
+
+binnedplot(x = onset.pir.data, y = onset.working.residuals,
+           xlab = "Poverty Income Ratio",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Poverty Income Ratio")
+
+binnedplot(x = onset.phys.data, y = onset.working.residuals,
+           xlab = "Physical Activity (mins/day)",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Physical Activity")
+
+binnedplot(x = onset.hei.data, y = onset.working.residuals,
+           xlab = "Healthy Eating Index",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Healthy Eating Index")
+
+binnedplot(x = onset.sleep.data, y = onset.working.residuals,
+           xlab = "Average Nightly Sleep (hrs)",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Average Nightly Sleep")
 
 par(mfrow = c(1, 1))
 
@@ -1630,14 +1655,14 @@ par(mfrow = c(1, 1))
 
 # Onset
 
-# Onset model 4 shows most cooks distances cluster below 20
-# There are a cloud of points higher than 20 and one that is much higher at around 100
-# It is useful to investigate these observations and how the model performs without them
+# Onset model 4 shows most cooks distances cluster below 10
+# It is useful to investigate the outlier observations and how the model performs without them
 # We do not want conclusions to depend on a small amount of influential points
 
-# Finding and plotting cooks distances for onset model 4 on imputation 1
-# Crucially, the results are very similar on other impuations, so only considering impuation 1 here is okay
-onset.cooks <- svyCooksD(logistic_onset.4$imp1, doplot=TRUE)
+# Finding and plotting cooks distances for onset model 10 on imputation 1
+# Crucially, the results are very similar on other imputations, so only considering imputation 1 here is okay
+# Earlier residual checks also showed no significant differences between imputations
+onset.cooks <- svyCooksD(logistic_onset.10$imp1, doplot=TRUE)
 # Saving indices of those points with the top 1% cooks distance
 onset_cooks_threshold <- quantile(onset.cooks, probs = 0.99)
 onset_influential_indices <- which(onset.cooks > onset_cooks_threshold)
@@ -1669,7 +1694,7 @@ onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender +
 # This means that removing influential points does not change findings
 summary(onset_without_influential)
 
-# Now checking this for the progression model
+# Now checking this for progression model 4
 
 prog.cooks <- svyCooksD(logistic_progression.4$imp1, doplot=TRUE)
 # Saving indices of those points with the top 1% cooks distance
@@ -1707,9 +1732,163 @@ summary(prog_without_influential)
 ## Appendix H: Model Results and Summaries
 
 ```{r, eval=FALSE}
-# --------------------------------------------- #
-# Model summaries and coefficient visualisation
-# --------------------------------------------- #
+# ----------------------#
+# Data & Model summaries 
+# ----------------------#
+
+# Descriptive statistics table of the final analytical sample
+
+# Seek to obtain the mean and standard deviation of each continuous variable, and
+# the count and proportion of each categorical variable from each imputed dataset.
+# The survey structure must be taken into account for these tasks using functions
+# such as svymean for survey-weighted means, and svyvar for survey-weighted variances.
+
+# These statistics will then be pooled and used to produce a concise summary statistics
+# table.
+
+# --- Step 1: Define a function to calculate summary stats for ONE dataset ---
+get_summary_stats <- function(design) {
+  # --- Continuous Variables ---
+  continuous_vars <- c("Age_yrs", "Almi", "WaistCircum_cm", "Bfp_perc", 
+                       "FamIncPov_Ratio", "HEI", "Phys", "AvgNightlySleep", "Hba1c_perc")
+  
+  cont_summary <- map_df(continuous_vars, ~{
+    mean_val <- svymean(as.formula(paste0("~", .x)), design, na.rm = TRUE)
+    var_val <- svyvar(as.formula(paste0("~", .x)), design, na.rm = TRUE)
+    tibble(
+      Variable = .x,
+      Mean = as.numeric(coef(mean_val)),
+      SD = sqrt(as.numeric(var_val)),
+      Type = "Continuous"
+    )
+  })
+  
+  # --- Categorical Variables ---
+  categorical_vars <- c("Gender", "Race", "Smoking_Status", "Alcohol_Status", "at_risk_or_worse", "is_diabetic")
+  
+  cat_summary <- map_df(categorical_vars, ~{
+    tbl <- svytable(as.formula(paste0("~", .x)), design)
+    props <- prop.table(tbl)
+    tibble(
+      Variable = paste0(.x, ", ", names(tbl)),
+      Prop = as.numeric(props),
+      Type = "Categorical"
+    )
+  })
+  
+  bind_rows(cont_summary, cat_summary)
+}
+
+# --- Step 2: Apply the function to all 30 design objects and pool ---
+# map_df runs the function on each design object and stacks the results.
+pooled_results <- map_df(design_list, get_summary_stats, .id = "imputation")
+
+# Now, calculate the final pooled estimates by averaging across imputations
+final_summary <- pooled_results %>%
+  group_by(Variable, Type) %>%
+  summarise(
+    Pooled_Mean = mean(Mean, na.rm = TRUE),
+    Pooled_SD = mean(SD, na.rm = TRUE),
+    Pooled_Prop = mean(Prop, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# --- Step 3: Format the final table for presentation with gt ---
+# Get total N from the first dataset (it's the same for all)
+total_n <- nrow(imputed_1118[[1]])
+
+# Format the continuous and categorical results separately
+formatted_continuous <- final_summary %>%
+  filter(Type == "Continuous") %>%
+  mutate(Value = sprintf("%.1f (%.1f)", Pooled_Mean, Pooled_SD)) %>%
+  select(Variable, Value)
+
+formatted_categorical <- final_summary %>%
+  filter(Type == "Categorical") %>%
+  mutate(
+    Pooled_N = Pooled_Prop * total_n,
+    Value = sprintf("%.0f (%.1f%%)", Pooled_N, Pooled_Prop * 100)
+  ) %>%
+  select(Variable, Value)
+
+variable_order <- c(
+  # Continuous Variables
+  "Age (years)", "ALMI (kg/m²)", "HbA1c (%)", "Body Fat Percentage (%)",
+  "Waist Circumference (cm)", "Poverty Income Ratio", "Physical Activity (mins/day)",
+  "Healthy Eating Index", "Average Nightly Sleep (hours)",
+  # Categorical Variables
+  "Normal HbA1c", "Elevated HbA1c", "Non-Diabetic", "Diabetic",
+  "Male", "Female",
+  "Mexican American", "Hispanic", "Non-Hispanic White",
+  "Non-Hispanic Black", "Non-Hispanic Asian", "Other Race",
+  "Never Drinker", "Former Drinker", "Moderate Drinker", "Heavy Drinker",
+  "Never Smoker", "Former Smoker", "Current Smoker"
+)
+
+
+# Combine into the final dataframe for the table
+final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
+  mutate(Variable_Clean = case_when(
+    Variable == "Almi" ~ "ALMI (kg/m²)",
+    Variable == "Hba1c_perc" ~ "HbA1c (%)",
+    Variable == "at_risk_or_worse, 0" ~ "Normal HbA1c",
+    Variable == "at_risk_or_worse, 1" ~ "Elevated HbA1c",
+    Variable == "is_diabetic, 0" ~ "Non-Diabetic",
+    Variable == "is_diabetic, 1" ~ "Diabetic",
+    Variable == "Age_yrs" ~ "Age (years)",
+    Variable == "Gender, Male" ~ "Male",
+    Variable == "Gender, Female" ~ "Female",
+    Variable == "Race, Mexican American" ~ "Mexican American",
+    Variable == "Race, Other Hispanic" ~ "Hispanic",
+    Variable == "Race, Non-Hispanic White" ~ "Non-Hispanic White",
+    Variable == "Race, Non-Hispanic Black" ~ "Non-Hispanic Black",
+    Variable == "Race, Non-Hispanic Asian" ~ "Non-Hispanic Asian",
+    Variable == "Race, Other Race - Including Multi-Racial" ~ "Other Race",
+    Variable == "Bfp_perc" ~ "Body Fat Percentage (%)",
+    Variable == "WaistCircum_cm" ~ "Waist Circumference (cm)",
+    Variable == "FamIncPov_Ratio" ~ "Poverty Income Ratio",
+    Variable == "Phys" ~ "Physical Activity (mins/day)",
+    Variable == "HEI" ~ "Healthy Eating Index",
+    Variable == "Alcohol_Status, Never Drinker" ~ "Never Drinker",
+    Variable == "Alcohol_Status, Former Drinker" ~ "Former Drinker",
+    Variable == "Alcohol_Status, Moderate Drinker" ~ "Moderate Drinker",
+    Variable == "Alcohol_Status, Heavy Drinker" ~ "Heavy Drinker",
+    Variable == "Smoking_Status, Never Smoker" ~ "Never Smoker",
+    Variable == "Smoking_Status, Former Smoker" ~ "Former Smoker",
+    Variable == "Smoking_Status, Current Smoker" ~ "Current Smoker",
+    Variable == "AvgNightlySleep" ~ "Average Nightly Sleep (hours)",
+    TRUE ~ Variable  # Keep original name if no match
+  )) %>%
+  # Convert the clean Variable name to a factor to enforce order
+  mutate(Variable_Clean = factor(Variable_Clean, levels = variable_order)) %>%
+  # Arrange the data according to the factor levels
+  arrange(Variable_Clean) %>%
+  # Select the final columns for the table
+  select(Variable = Variable_Clean, Value) %>%
+  rename(Characteristic = Variable)
+
+# --- Create the Table ---
+descriptive_tbl_kbl <- kbl(
+  final_table_df,
+  format = "latex",
+  booktabs = TRUE
+) %>%
+  kable_styling(
+    font_size = 9,
+    full_width = FALSE
+  ) %>%
+  pack_rows("Glycaemic Status (Onset)", 10, 11) %>%
+  pack_rows("Diabetes Status (Progression)", 12, 13) %>%
+  pack_rows("Gender", 14, 15) %>%
+  pack_rows("Race", 16, 21) %>%
+  pack_rows("Alcohol Consumption", 22, 25) %>%
+  pack_rows("Smoking Status", 26, 28) %>%
+  footnote(
+    general = "ALMI: Appendicular Lean Mass Index; HbA1c: Haemoglobin A1c.",
+    symbol = "Continuous variables presented as mean (SD), categorical variables presented as n (%).",
+    threeparttable = TRUE, 
+    footnote_as_chunk = TRUE
+  )
 
 # Extracting pooled model ALMI coefficients and confidence intervals
 # Also finding the % change of each ALMI coefficient progressing through the models
@@ -1731,8 +1910,7 @@ onset.almi.confint <- sapply(pooled.onset.names, function(name) {
 
 onset.percent.changes <- c("N/A")  # First % is NA as there is no comparison
 for (i in 1:9) {
-  onset.percent.changes[i+1] <- ((abs(onset.almi.coeffs[i + 1]) - abs(onset.almi.coeffs[i])) /
-                                   abs(onset.almi.coeffs[i])) * 100
+  onset.percent.changes[i+1] <- ((onset.almi.coeffs[i + 1] - onset.almi.coeffs[i]) / abs(onset.almi.coeffs[i])) * 100
 }
 
 # Progression
@@ -1753,8 +1931,7 @@ prog.almi.confint <- sapply(pooled.prog.names, function(name) {
 
 prog.percent.changes <- c("N/A")
 for (i in 1:9) {
-  prog.percent.changes[i+1] <- ((abs(prog.almi.coeffs[i + 1]) - abs(prog.almi.coeffs[i])) /
-                                  abs(prog.almi.coeffs[i])) * 100
+  prog.percent.changes[i+1] <- ((prog.almi.coeffs[i + 1] - prog.almi.coeffs[i]) / abs(prog.almi.coeffs[i])) * 100
 }
 
 # ----- ONSET SUMMARY TABLE ----- #
@@ -1778,6 +1955,11 @@ for (i in 2:10) {
   onset.percent.changes.formatted[i] = paste0(sprintf("%.2f", value[i]), "%")
 }
 
+# Array of covariate changes for summary tables
+covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
+                "+ Poverty Income Ratio", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
+                "+ Smoking Status", "+ Average Daily Sleep (hrs)")
+
 # Data frame
 onset.summary.df <- data.frame(
   Model = paste("Model", 1:10),
@@ -1786,40 +1968,35 @@ onset.summary.df <- data.frame(
   `95% Confidence Interval (OR)` = onset.ci.combined,
   `ALMI Coefficient (log OR)` = onset.almi.coeffs,
   `Percentage Change in Coefficient` = onset.percent.changes.formatted,
+  `McFadden Pseudo R²` = onset.pseudo.r2.list,
+  `Archer-Lemeshow GoF Test P-value` = onset.gof.pvalue,
   check.names = FALSE
   
 )
 
 # Creating table
-onset.summary.table <- onset.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`, `ALMI Coefficient (log OR)`),
-    decimals = 3
+onset.summary.table.kbl <- kbl(
+  onset.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, NA, 3, NA, 3, NA, 3, 3),
+  align = c("l", "l", "r", "r", "r", "r", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 8
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
+  add_header_above(
+    c("Odds Ratios, Coefficients, Percentage Changes, and Diagnostics" = 8),
+    bold = FALSE
   ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`,
-                `Percentage Change in Coefficient`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Logtistic Regression Onset Model Results",
-    subtitle = "Relative Risks, Coefficients, and Percentage Changes"
-  ) 
-
-# Print the table
-onset.summary.table
+  column_spec(column = 2, width = "15em") %>%
+  column_spec(column = 3, width = "4em") %>%
+  column_spec(column = 4, width = "7em") %>%
+  column_spec(column = 5, width = "5em") %>%
+  column_spec(column = 6, width = "5em") %>%
+  column_spec(column = 7, width = "5em") %>%
+  column_spec(column = 8, width = "5em")
 
 # ----- PROG SUMMARY TABLE ----- #
 
@@ -1849,74 +2026,80 @@ prog.summary.df <- data.frame(
   `95% Confidence Interval (OR)` = prog.ci.combined,
   `ALMI Coefficient (log OR)` = prog.almi.coeffs,
   `Percentage Change in Coefficient` = prog.percent.changes.formatted,
+  `McFadden Pseudo R²` = prog.pseudo.r2.list,
+  `Archer-Lemeshow GoF Test P-value` = prog.gof.pvalue,
   check.names = FALSE
   
 )
 
 # Creating table
-prog.summary.table <- prog.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`, `ALMI Coefficient (log OR)`),
-    decimals = 3
+prog.summary.table.kbl <- kbl(
+  prog.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, NA, 3, NA, 3, NA, 3, 3),
+  align = c("l", "l", "r", "r", "r", "r", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 8
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Model, `Covariate Changes`)
+  add_header_above(
+    c("Odds Ratios, Coefficients, Percentage Changes, and Diagnostics" = 8),
+    bold = FALSE
   ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`, `ALMI Coefficient (log OR)`,
-                `Percentage Change in Coefficient`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Logistic Regression Progression Model Results",
-    subtitle = "Odds Ratios, Coefficients, and Percentage Changes"
-  ) 
-
-# Print the table
-prog.summary.table
+  column_spec(column = 2, width = "15em") %>%
+  column_spec(column = 3, width = "4em") %>%
+  column_spec(column = 4, width = "7em") %>%
+  column_spec(column = 5, width = "5em") %>%
+  column_spec(column = 6, width = "5em") %>%
+  column_spec(column = 7, width = "5em") %>%
+  column_spec(column = 8, width = "5em")
 
 # --- Summary tables of all model coefficients from the fully adjusted models --- #
 
-# -- VIF values evidencing the suppressor effect seen when moving from onset and progression models 3 to 4 -- #
+# -- VIF values evidencing the masking effect of waist circumference seen when moving from onset
+# and progression models 3 to 4 -- #
 
 # Check of survey adjusted VIF values of progression model 4 show high significant multicollinearity
-# This is not a problem and explains the the suppressor effect that causes the ALMI coefficient
+# This is not a problem - it explains the effect that causes the ALMI coefficient
 # becoming negative once waist circumference is added to the model.
 
+# Onset
+
 # Design matrix from the model formula and data
-X.prog.4 <- model.matrix(logistic_progression.4$imp1$formula, data = design_list$imp1$variables)
+X.onset.3 <- model.matrix(logistic_onset.3$imp1$formula, data = design_list$imp1$variables)
 # Remove the intercept column
-X.prog.4 <- X.prog.4[, -1]
+X.onset.3 <- X.onset.3[, -1]
 # Extract the survey weights from the design object
 weights <- weights(design_list$imp1)
 # Run svyvif
-prog_vif_values.4 <- svyvif(mobj = logistic_progression.4$imp1, X = X.prog.4, w = weights)
+onset_vif_values.3 <- svyvif(mobj = logistic_onset.3$imp1, X = X.onset.3, w = weights)
 # Print the results
+print(onset_vif_values.3$`Intercept adjusted`)
+
+X.onset.4 <- model.matrix(logistic_onset.4$imp1$formula, data = design_list$imp1$variables)
+X.onset.4 <- X.onset.4[, -1]
+onset_vif_values.4 <- svyvif(mobj = logistic_onset.4$imp1, X = X.onset.4, w = weights)
+print(onset_vif_values.4$`Intercept adjusted`)
+
+# Progression
+
+X.prog.3 <- model.matrix(logistic_progression.3$imp1$formula, data = design_list$imp1$variables)
+X.prog.3 <- X.prog.3[, -1]
+prog_vif_values.3 <- svyvif(mobj = logistic_progression.3$imp1, X = X.prog.3, w = weights)
+print(prog_vif_values.3$`Intercept adjusted`)
+
+X.prog.4 <- model.matrix(logistic_progression.4$imp1$formula, data = design_list$imp1$variables)
+X.prog.4 <- X.prog.4[, -1]
+prog_vif_values.4 <- svyvif(mobj = logistic_progression.4$imp1, X = X.prog.4, w = weights)
 print(prog_vif_values.4$`Intercept adjusted`)
 
 # Before waist circumference is added, there is no evidence of severe multicolinearity,
 # as seen by the weighted VIF values of progression model 3.
 # This further reinforces the findings.
 
-# Design matrix from the model formula and data
-X.prog.3 <- model.matrix(logistic_progression.3$imp1$formula, data = design_list$imp1$variables)
-# Remove the intercept column
-X.prog.3 <- X.prog.3[, -1]
-# Run svyvif
-prog_vif_values.3 <- svyvif(mobj = logistic_progression.3$imp1, X = X.prog.3, w = weights)
-# Print the results
-print(prog_vif_values.3$`Intercept adjusted`)
-
-# --- Forest plots and tables of odds ratios from fully adjusted models --- #
+# --- Forest plots and tables of odds ratios from the final models --- #
 
 # Useful to visualise coefficient estimates
 
@@ -1965,6 +2148,7 @@ onset.forest.plot.data <- data.frame(
     TRUE ~ variable  # Keep original name if no match
   ))
 
+
 # --- Step 2: Create the Forest Plot --- #
 
 ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
@@ -1989,8 +2173,7 @@ ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
 # Also making a table of these values
 
 # Combining CIs into a single string column
-onset.adjusted.ci.combined <- paste0("(", sprintf("%.3f", onset.forest.plot.data$lower_ci), ", ", sprintf("%.3f",
-                        onset.forest.plot.data$upper_ci), ")")
+onset.adjusted.ci.combined <- paste0("(", sprintf("%.3f", onset.forest.plot.data$lower_ci), ", ", sprintf("%.3f", onset.forest.plot.data$upper_ci), ")")
 
 # Dataframe for table
 onset.adjusted.summary.df <- onset.forest.plot.data[,c(1,5)] %>%
@@ -2003,41 +2186,28 @@ onset.adjusted.summary.df <- onset.forest.plot.data[,c(1,5)] %>%
   )
 
 # Creating table
-onset.adjusted.summary.tbl <- onset.adjusted.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`),
-    decimals = 3
+onset.adjusted.summary.tbl.kbl <- kbl(
+  onset.adjusted.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, 3, NA),
+  align = c("l", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 10
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Predictor)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Fully Adjusted Onset Model",
-    subtitle = "Coefficient Estimates and 95% Confidence Intervals"
+  add_header_above(
+    c("Odds Ratios and 95% Confidence Intervals" = 3),
+    bold = FALSE
   ) 
 
-# Print the table
-onset.adjusted.summary.tbl
-
-# Progression Model 10
+# Progression Model 4 (Parsimonious)
 
 # --- Step 1: Extract the results into a clean dataframe --- #
 
 # Get the full summary table from the pooled model on the log scale
-prog_model_summary_log <- summary(pooled_logistic_progression.10)
+prog_model_summary_log <- summary(pooled_logistic_progression.4)
 
 # Create a clean dataframe from this summary object
 prog.forest.plot.data <- data.frame(
@@ -2065,15 +2235,6 @@ prog.forest.plot.data <- data.frame(
     variable == "RaceOther Race - Including Multi-Racial" ~ "Other Race",
     variable == "Bfp_perc" ~ "Body Fat Percentage",
     variable == "WaistCircum_cm" ~ "Waist Circumference",
-    variable == "FamIncPov_Ratio" ~ "Ratio of Family Income to Poverty",
-    variable == "Phys" ~ "Physical Activity",
-    variable == "Hei" ~ "Healthy Eating Index",
-    variable == "Alcohol_StatusFormer Drinker" ~ "Former Drinker",
-    variable == "Alcohol_StatusModerate Drinker" ~ "Moderate Drinker",
-    variable == "Alcohol_StatusHeavy Drinker" ~ "Heavy Drinker",
-    variable == "Smoking_StatusFormer Smoker" ~ "Former Smoker",
-    variable == "Smoking_StatusCurrent Smoker" ~ "Current Smoker",
-    variable == "AvgNightlySleep" ~ "Average Nightly Sleep",
     TRUE ~ variable  # Keep original name if no match
   ))
 
@@ -2101,8 +2262,7 @@ ggplot(prog.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
 # Now making a table for these values
 
 # Combining CIs into a single string column
-prog.adjusted.ci.combined <- paste0("(", sprintf("%.3f", prog.forest.plot.data$lower_ci), ", ", sprintf("%.3f",
-                     prog.forest.plot.data$upper_ci), ")")
+prog.adjusted.ci.combined <- paste0("(", sprintf("%.3f", prog.forest.plot.data$lower_ci), ", ", sprintf("%.3f", prog.forest.plot.data$upper_ci), ")")
 
 # Dataframe for table
 prog.adjusted.summary.df <- prog.forest.plot.data[,c(1,5)] %>%
@@ -2115,34 +2275,21 @@ prog.adjusted.summary.df <- prog.forest.plot.data[,c(1,5)] %>%
   )
 
 # Creating table
-prog.adjusted.summary.tbl <- prog.adjusted.summary.df %>%
-  gt() %>%
-  
-  # Format numeric columns nicely
-  fmt_number(
-    columns = c(`Odds Ratio (OR)`),
-    decimals = 3
+prog.adjusted.summary.tbl.kbl <- kbl(
+  prog.adjusted.summary.df,
+  format = "latex",
+  booktabs = TRUE,
+  linesep = "",
+  digits = c(NA, 3, NA),
+  align = c("l", "r", "r")
+) %>%
+  kable_styling(
+    font_size = 10
   ) %>%
-  
-  
-  # Align columns (right align numbers, left align text)
-  cols_align(
-    align = "left",
-    columns = c(Predictor)
-  ) %>%
-  cols_align(
-    align = "right",
-    columns = c(`Odds Ratio (OR)`, `95% Confidence Interval (OR)`)
-  ) %>%
-  
-  # Add a title and subtitle 
-  tab_header(
-    title = "Summary of Fully Adjusted Progression Model",
-    subtitle = "Coefficient Estimates and 95% Confidence Intervals"
+  add_header_above(
+    c("Odds Ratios and 95% Confidence Intervals" = 3),
+    bold = FALSE
   ) 
-
-# Print the table
-prog.adjusted.summary.tbl
 ```
 
 ## Appendix I: Model Prediction {#predcode}
@@ -2159,24 +2306,38 @@ prog.adjusted.summary.tbl
 # --- Step 1: Define model and data objects ---
 m <- 30 # Number of imputations
 
-# Use the first imputed dataset as a template for creating the prediction grid
-# This is a safe and standard practice
-template_data <- design_list$imp1$variables
+# First, bind all 30 imputed datasets into one large dataframe
+# This is needed for variables that were actually imputed.
+all_imputed_data <- bind_rows(imputed_1118)
+
+# Use the first imputed dataset as a template for non-imputed variables and ranges
+template_data <- imputed_1118[[1]]
+
+# Calculate the pooled mean for the IMPUTED continuous variables
+pooled_mean_bfp <- mean(all_imputed_data$Bfp_perc)
+pooled_mean_waist <- mean(all_imputed_data$WaistCircum_cm)
+
+# For variables that were NOT imputed, take the value from the template
+# This is more efficient as the value is the same across all imputations.
+pooled_mean_age <- mean(template_data$Age_yrs)
+
+# Calculate the mode for Race from the template data
+pooled_mode_race <- names(which.max(table(template_data$Race)))
 
 # --- Step 2: Create prediction dataframes (one for each gender) ---
 
 # Create a sequence of Almi values to predict over
 almi_range <- seq(min(template_data$Almi),
                   max(template_data$Almi),
-                  length.out = 100)
+                  length.out = 1000)
 
 # Base prediction df with average/modal values for all other confounders
 predict_df_base <- data.frame(
   Almi = almi_range,
-  Age_yrs = mean(template_data$Age_yrs),
-  Race = factor("Non-Hispanic White", levels = levels(template_data$Race)),
-  Bfp_perc = mean(template_data$Bfp_perc),
-  WaistCircum_cm = mean(template_data$WaistCircum_cm)
+  Age_yrs = pooled_mean_age,
+  Race = factor(pooled_mode_race, levels = levels(template_data$Race)),
+  Bfp_perc = pooled_mean_bfp,
+  WaistCircum_cm = pooled_mean_waist
 )
 
 # Create a specific version for Males
@@ -2191,12 +2352,13 @@ predict_df_female <- predict_df_base %>%
 predict_df_combined <- rbind(predict_df_male, predict_df_female)
 
 # --- Step 3: Predict on ALL Imputations ---
-# We'll loop through each of the 30 models and get predictions.
+# Loop through each of the 30 models and get predictions.
 
 prediction_list <- lapply(logistic_progression.4, function(model) {
   
-  # Get predictions (response = probability) and the standard error for each
-  preds <- predict(model, newdata = predict_df_combined, type = "response", se.fit = TRUE)
+  # Get predictions and the standard error for each in the logit scale
+  # This prevents negative probability confidence intervals
+  preds <- predict(model, newdata = predict_df_combined, type = "link", se.fit = TRUE)
   
   # Combine the predictors and the predictions into a single dataframe
   imputation_results <- cbind(predict_df_combined, as.data.frame(preds))
@@ -2205,7 +2367,7 @@ prediction_list <- lapply(logistic_progression.4, function(model) {
 })
 
 # --- Step 4: Pool the Results Using Rubin's Rules ---
-# Now we combine the 30 sets of predictions into one final result.
+# Now combine the 30 sets of predictions into one final result.
 
 # First, stack all the dataframes from the list into one big dataframe,
 # adding an ID for each imputation.
@@ -2213,36 +2375,30 @@ all_predictions <- bind_rows(prediction_list, .id = "imputation_id")
 
 # Now, group by each prediction point and apply Rubin's rules
 plot_data_pooled <- all_predictions %>%
-  # Make sure the SE from predict() is named consistently
-  rename(prevalence = response, se = SE) %>%
-  
-  # Group by each unique combination of predictors
+  # Rename columns for clarity
+  rename(logit_pred = link, se = SE) %>%
   group_by(Almi, Age_yrs, Gender, Race, Bfp_perc, WaistCircum_cm) %>%
-  
-  # Apply the pooling formulas
   summarise(
-    # 1. Average the predicted probabilities
-    pooled_prevalence = mean(prevalence),
-    
-    # 2. Calculate the 'within' imputation variance (average of the variances)
+    # Pool the logit predictions
+    pooled_logit = mean(logit_pred),
     within_imputation_var = mean(se^2),
-    
-    # 3. Calculate the 'between' imputation variance (variance of the averages)
-    between_imputation_var = var(prevalence),
-    
-    # 4. Combine them for the total variance
+    between_imputation_var = var(logit_pred),
     total_variance = within_imputation_var + (1 + 1/m) * between_imputation_var,
-    
-    # 5. Get the final pooled standard error
-    pooled_se = sqrt(total_variance),
-    
-    .groups = 'drop' # Ungroup for the next steps
+    pooled_se_logit = sqrt(total_variance),
+    .groups = 'drop'
   ) %>%
-  
-  # 6. Calculate the final 95% confidence interval
+  # Back-transform to the Probability Scale 
   mutate(
-    lower_ci = pooled_prevalence - 1.96 * pooled_se,
-    upper_ci = pooled_prevalence + 1.96 * pooled_se
+    # Back-transform the point estimate
+    pooled_prevalence = plogis(pooled_logit),
+    
+    # Calculate the CI on the logit scale
+    lower_ci_logit = pooled_logit - 1.96 * pooled_se_logit,
+    upper_ci_logit = pooled_logit + 1.96 * pooled_se_logit,
+    
+    # Back-transform the CI bounds to the probability scale
+    lower_ci = plogis(lower_ci_logit),
+    upper_ci = plogis(upper_ci_logit)
   )
 
 # --- Step 5: Create the final plot with two lines ---

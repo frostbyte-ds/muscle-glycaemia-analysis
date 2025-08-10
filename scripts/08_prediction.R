@@ -10,24 +10,34 @@
 # --- Step 1: Define model and data objects ---
 m <- 30 # Number of imputations
 
-# Use the first imputed dataset as a template for creating the prediction grid
-# This is a safe and standard practice
-template_data <- design_list$imp1$variables
+# Use the first imputed dataset as a template for non-imputed variables and ranges
+template_data <- imputed_1118[[1]]
+
+# Calculate the pooled mean for the IMPUTED continuous variables
+pooled_mean_bfp <- mean(all_imputed_data$Bfp_perc)
+pooled_mean_waist <- mean(all_imputed_data$WaistCircum_cm)
+
+# For variables that were NOT imputed, take the value from the template
+# This is more efficient as the value is the same across all imputations.
+pooled_mean_age <- mean(template_data$Age_yrs)
+
+# Calculate the mode for Race from the template data
+pooled_mode_race <- names(which.max(table(template_data$Race)))
 
 # --- Step 2: Create prediction dataframes (one for each gender) ---
 
 # Create a sequence of Almi values to predict over
 almi_range <- seq(min(template_data$Almi),
                   max(template_data$Almi),
-                  length.out = 100)
+                  length.out = 1000)
 
 # Base prediction df with average/modal values for all other confounders
 predict_df_base <- data.frame(
   Almi = almi_range,
-  Age_yrs = mean(template_data$Age_yrs),
-  Race = factor("Non-Hispanic White", levels = levels(template_data$Race)),
-  Bfp_perc = mean(template_data$Bfp_perc),
-  WaistCircum_cm = mean(template_data$WaistCircum_cm)
+  Age_yrs = pooled_mean_age,
+  Race = factor(pooled_mode_race, levels = levels(template_data$Race)),
+  Bfp_perc = pooled_mean_bfp,
+  WaistCircum_cm = pooled_mean_waist
 )
 
 # Create a specific version for Males
@@ -46,8 +56,9 @@ predict_df_combined <- rbind(predict_df_male, predict_df_female)
 
 prediction_list <- lapply(logistic_progression.4, function(model) {
   
-  # Get predictions (response = probability) and the standard error for each
-  preds <- predict(model, newdata = predict_df_combined, type = "response", se.fit = TRUE)
+  # Get predictions and the standard error for each in the logit scale
+  # This prevents negative probability confidence intervals
+  preds <- predict(model, newdata = predict_df_combined, type = "link", se.fit = TRUE)
   
   # Combine the predictors and the predictions into a single dataframe
   imputation_results <- cbind(predict_df_combined, as.data.frame(preds))
@@ -64,36 +75,30 @@ all_predictions <- bind_rows(prediction_list, .id = "imputation_id")
 
 # Now, group by each prediction point and apply Rubin's rules
 plot_data_pooled <- all_predictions %>%
-  # Make sure the SE from predict() is named consistently
-  rename(prevalence = response, se = SE) %>%
-  
-  # Group by each unique combination of predictors
+  # Rename columns for clarity
+  rename(logit_pred = link, se = SE) %>%
   group_by(Almi, Age_yrs, Gender, Race, Bfp_perc, WaistCircum_cm) %>%
-  
-  # Apply the pooling formulas
   summarise(
-    # 1. Average the predicted probabilities
-    pooled_prevalence = mean(prevalence),
-    
-    # 2. Calculate the 'within' imputation variance (average of the variances)
+    # Pool the logit predictions
+    pooled_logit = mean(logit_pred),
     within_imputation_var = mean(se^2),
-    
-    # 3. Calculate the 'between' imputation variance (variance of the averages)
-    between_imputation_var = var(prevalence),
-    
-    # 4. Combine them for the total variance
+    between_imputation_var = var(logit_pred),
     total_variance = within_imputation_var + (1 + 1/m) * between_imputation_var,
-    
-    # 5. Get the final pooled standard error
-    pooled_se = sqrt(total_variance),
-    
-    .groups = 'drop' # Ungroup for the next steps
+    pooled_se_logit = sqrt(total_variance),
+    .groups = 'drop'
   ) %>%
-  
-  # 6. Calculate the final 95% confidence interval
+  # Back-transform to the Probability Scale 
   mutate(
-    lower_ci = pooled_prevalence - 1.96 * pooled_se,
-    upper_ci = pooled_prevalence + 1.96 * pooled_se
+    # Back-transform the point estimate
+    pooled_prevalence = plogis(pooled_logit),
+    
+    # Calculate the CI on the logit scale
+    lower_ci_logit = pooled_logit - 1.96 * pooled_se_logit,
+    upper_ci_logit = pooled_logit + 1.96 * pooled_se_logit,
+    
+    # Back-transform the CI bounds to the probability scale
+    lower_ci = plogis(lower_ci_logit),
+    upper_ci = plogis(upper_ci_logit)
   )
 
 # --- Step 5: Create the final plot with two lines ---
@@ -115,4 +120,4 @@ ggplot(plot_data_pooled, aes(x = Almi, y = pooled_prevalence, color = Gender, fi
     x = "Appendicular Lean Mass Index (kg/m²)",
     y = "Predicted Prevalence of Diabetes"
   ) +
-  theme(legend.position = "bottom")
+  theme_dissertation()

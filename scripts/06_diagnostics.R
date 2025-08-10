@@ -202,7 +202,7 @@ names(prog.pseudo.r2.list) <- NULL
 
 # binnedplot in the arm package is ideal for this case
 
-# Seek to plot binned residuals of the parsimonious onset and progression models
+# Seek to plot binned residuals of the fully adjusted onset model and parsimonious progression model
 # for the first 9 imputations to assess model fit and if there are any significant
 # differences between imputed datasets
 
@@ -212,7 +212,7 @@ par(mfrow = c(3, 3))
 # Loop through the first 9 imputations for the onset model
 for (i in 1:9) {
   # Assuming logistic_onset.4 is a list of model fits
-  model_fit <- logistic_onset.4[[i]]
+  model_fit <- logistic_onset.10[[i]]
   
   binnedplot(
     fitted(model_fit),
@@ -260,7 +260,7 @@ par(mfrow = c(1, 1))
 # Onset
 
 # Get the working residuals and the specific predictor
-onset.model.fit <- logistic_onset.4$imp1
+onset.model.fit <- logistic_onset.10$imp1
 onset.y.outcome <- onset.model.fit$survey.design$variables$at_risk_or_worse
 onset.mu.fitted <- fitted(onset.model.fit)
 onset.working.residuals <- (onset.y.outcome - onset.mu.fitted) / onset.mu.fitted
@@ -269,9 +269,13 @@ onset.almi.data <- onset.model.fit$survey.design$variables$Almi
 onset.age.data <- onset.model.fit$survey.design$variables$Age_yrs
 onset.bfp.data <- onset.model.fit$survey.design$variables$Bfp_perc
 onset.waistcircum.data <- onset.model.fit$survey.design$variables$WaistCircum_cm
+onset.pir.data <- onset.model.fit$survey.design$variables$FamIncPov_Ratio
+onset.phys.data <- onset.model.fit$survey.design$variables$Phys
+onset.hei.data <- onset.model.fit$survey.design$variables$HEI
+onset.sleep.data <- onset.model.fit$survey.design$variables$AvgNightlySleep
 
 # Create the binned plot of residuals vs. the predictor
-par(mfrow = c(2, 2))
+par(mfrow = c(2, 4))
 binnedplot(x = onset.almi.data, y = onset.working.residuals,
            xlab = "ALMI (kg/m²)",
            ylab = "Average Working Residual",
@@ -291,6 +295,26 @@ binnedplot(x = onset.waistcircum.data, y = onset.working.residuals,
            xlab = "Waist Circumference (cm)",
            ylab = "Average Working Residual",
            main = "Binned Residuals vs. Waist Circumference")
+
+binnedplot(x = onset.pir.data, y = onset.working.residuals,
+           xlab = "Poverty Income Ratio",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Poverty Income Ratio")
+
+binnedplot(x = onset.phys.data, y = onset.working.residuals,
+           xlab = "Physical Activity (mins/day)",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Physical Activity")
+
+binnedplot(x = onset.hei.data, y = onset.working.residuals,
+           xlab = "Healthy Eating Index",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Healthy Eating Index")
+
+binnedplot(x = onset.sleep.data, y = onset.working.residuals,
+           xlab = "Average Nightly Sleep (hrs)",
+           ylab = "Average Working Residual",
+           main = "Binned Residuals vs. Average Nightly Sleep")
 
 par(mfrow = c(1, 1))
 
@@ -339,14 +363,14 @@ par(mfrow = c(1, 1))
 
 # Onset
 
-# Onset model 4 shows most cooks distances cluster below 20
-# There are a cloud of points higher than 20 and one that is much higher at around 100
-# It is useful to investigate these observations and how the model performs without them
+# Onset model 4 shows most cooks distances cluster below 10
+# It is useful to investigate the outlier observations and how the model performs without them
 # We do not want conclusions to depend on a small amount of influential points
 
-# Finding and plotting cooks distances for onset model 4 on imputation 1
+# Finding and plotting cooks distances for onset model 10 on imputation 1
 # Crucially, the results are very similar on other imputations, so only considering imputation 1 here is okay
-onset.cooks <- svyCooksD(logistic_onset.4$imp1, doplot=TRUE)
+# Earlier residual checks also showed no significant differences between imputations
+onset.cooks <- svyCooksD(logistic_onset.10$imp1, doplot=TRUE)
 # Saving indices of those points with the top 1% cooks distance
 onset_cooks_threshold <- quantile(onset.cooks, probs = 0.99)
 onset_influential_indices <- which(onset.cooks > onset_cooks_threshold)
@@ -378,7 +402,7 @@ onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender +
 # This means that removing influential points does not change findings
 summary(onset_without_influential)
 
-# Now checking this for the progression model
+# Now checking this for progression model 4
 
 prog.cooks <- svyCooksD(logistic_progression.4$imp1, doplot=TRUE)
 # Saving indices of those points with the top 1% cooks distance

@@ -1,11 +1,11 @@
-# --------------------------------------------- #
-# Data & Model summaries and coefficient visualisation
-# --------------------------------------------- #
+# ----------------------#
+# Data & Model summaries 
+# ----------------------#
 
 # Descriptive statistics table of the final analytical sample
 
 # Seek to obtain the mean and standard deviation of each continuous variable, and
-# the count and proportion of each categorical variable from each imputated dataset.
+# the count and proportion of each categorical variable from each imputed dataset.
 # The survey structure must be taken into account for these tasks using functions
 # such as svymean for survey-weighted means, and svyvar for survey-weighted variances.
 
@@ -30,7 +30,7 @@ get_summary_stats <- function(design) {
   })
   
   # --- Categorical Variables ---
-  categorical_vars <- c("Gender", "Race", "Smoking_Status", "Alcohol_Status")
+  categorical_vars <- c("Gender", "Race", "Smoking_Status", "Alcohol_Status", "at_risk_or_worse", "is_diabetic")
   
   cat_summary <- map_df(categorical_vars, ~{
     tbl <- svytable(as.formula(paste0("~", .x)), design)
@@ -78,23 +78,12 @@ formatted_categorical <- final_summary %>%
   select(Variable, Value)
 
 variable_order <- c(
-  "ALMI (kg/m²)", "HbA1c (%)", "Age (years)", 
-  "Male", "Female",
-  "Mexican American", "Hispanic", "Non-Hispanic White", "Non-Hispanic Black", "Non-Hispanic Asian", "Other Race",
-  "Body Fat Percentage (%)", "Waist Circumference (cm)", 
-  "Ratio of Family Income to Poverty", "Physical Activity (mins/day)", 
-  "Healthy Eating Index", 
-  "Never Drinker", "Former Drinker", "Moderate Drinker", "Heavy Drinker",
-  "Never Smoker", "Former Smoker", "Current Smoker",
-  "Average Nightly Sleep (hours)"
-)
-
-variable_order <- c(
   # Continuous Variables
   "Age (years)", "ALMI (kg/m²)", "HbA1c (%)", "Body Fat Percentage (%)",
   "Waist Circumference (cm)", "Poverty Income Ratio", "Physical Activity (mins/day)",
   "Healthy Eating Index", "Average Nightly Sleep (hours)",
   # Categorical Variables
+  "Normal HbA1c", "Elevated HbA1c", "Non-Diabetic", "Diabetic",
   "Male", "Female",
   "Mexican American", "Hispanic", "Non-Hispanic White",
   "Non-Hispanic Black", "Non-Hispanic Asian", "Other Race",
@@ -108,6 +97,10 @@ final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
   mutate(Variable_Clean = case_when(
     Variable == "Almi" ~ "ALMI (kg/m²)",
     Variable == "Hba1c_perc" ~ "HbA1c (%)",
+    Variable == "at_risk_or_worse, 0" ~ "Normal HbA1c",
+    Variable == "at_risk_or_worse, 1" ~ "Elevated HbA1c",
+    Variable == "is_diabetic, 0" ~ "Non-Diabetic",
+    Variable == "is_diabetic, 1" ~ "Diabetic",
     Variable == "Age_yrs" ~ "Age (years)",
     Variable == "Gender, Male" ~ "Male",
     Variable == "Gender, Female" ~ "Female",
@@ -142,7 +135,7 @@ final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
 
 # --- Create the Table ---
 descriptive_tbl_kbl <- kbl(
-  df_reordered,
+  final_table_df,
   format = "latex",
   booktabs = TRUE
 ) %>%
@@ -150,12 +143,14 @@ descriptive_tbl_kbl <- kbl(
     font_size = 9,
     full_width = FALSE
   ) %>%
-  pack_rows("Gender", 10, 11) %>%
-  pack_rows("Race", 12, 17) %>%
-  pack_rows("Alcohol Consumption", 18, 21) %>%
-  pack_rows("Smoking Status", 22, 24) %>%
+  pack_rows("Glycaemic Status (Onset)", 10, 11) %>%
+  pack_rows("Diabetes Status (Progression)", 12, 13) %>%
+  pack_rows("Gender", 14, 15) %>%
+  pack_rows("Race", 16, 21) %>%
+  pack_rows("Alcohol Consumption", 22, 25) %>%
+  pack_rows("Smoking Status", 26, 28) %>%
   footnote(
-    general = "ALMI: Appendicular Lean Mass Index; HbA1c: Hemoglobin A1c.",
+    general = "ALMI: Appendicular Lean Mass Index; HbA1c: Haemoglobin A1c.",
     symbol = "Continuous variables presented as mean (SD), categorical variables presented as n (%).",
     threeparttable = TRUE, 
     footnote_as_chunk = TRUE
@@ -181,7 +176,7 @@ onset.almi.confint <- sapply(pooled.onset.names, function(name) {
 
 onset.percent.changes <- c("N/A")  # First % is NA as there is no comparison
 for (i in 1:9) {
-  onset.percent.changes[i+1] <- ((abs(onset.almi.coeffs[i + 1]) - abs(onset.almi.coeffs[i])) / abs(onset.almi.coeffs[i])) * 100
+  onset.percent.changes[i+1] <- ((onset.almi.coeffs[i + 1] - onset.almi.coeffs[i]) / abs(onset.almi.coeffs[i])) * 100
 }
 
 # Progression
@@ -202,7 +197,7 @@ prog.almi.confint <- sapply(pooled.prog.names, function(name) {
 
 prog.percent.changes <- c("N/A")
 for (i in 1:9) {
-  prog.percent.changes[i+1] <- ((abs(prog.almi.coeffs[i + 1]) - abs(prog.almi.coeffs[i])) / abs(prog.almi.coeffs[i])) * 100
+  prog.percent.changes[i+1] <- ((prog.almi.coeffs[i + 1] - prog.almi.coeffs[i]) / abs(prog.almi.coeffs[i])) * 100
 }
 
 # ----- ONSET SUMMARY TABLE ----- #
@@ -228,7 +223,7 @@ for (i in 2:10) {
 
 # Array of covariate changes for summary tables
 covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
-                "+ Ratio of Family Income to Poverty", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
+                "+ Poverty Income Ratio", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
                 "+ Smoking Status", "+ Average Daily Sleep (hrs)")
 
 # Data frame
@@ -261,8 +256,8 @@ onset.summary.table.kbl <- kbl(
     c("Odds Ratios, Coefficients, Percentage Changes, and Diagnostics" = 8),
     bold = FALSE
   ) %>%
-  column_spec(column = 3, width = "8em") %>%
-  column_spec(column = 3, width = "5em") %>%
+  column_spec(column = 2, width = "15em") %>%
+  column_spec(column = 3, width = "4em") %>%
   column_spec(column = 4, width = "7em") %>%
   column_spec(column = 5, width = "5em") %>%
   column_spec(column = 6, width = "5em") %>%
@@ -319,8 +314,8 @@ prog.summary.table.kbl <- kbl(
     c("Odds Ratios, Coefficients, Percentage Changes, and Diagnostics" = 8),
     bold = FALSE
   ) %>%
-  column_spec(column = 3, width = "8em") %>%
-  column_spec(column = 3, width = "5em") %>%
+  column_spec(column = 2, width = "15em") %>%
+  column_spec(column = 3, width = "4em") %>%
   column_spec(column = 4, width = "7em") %>%
   column_spec(column = 5, width = "5em") %>%
   column_spec(column = 6, width = "5em") %>%
@@ -329,233 +324,43 @@ prog.summary.table.kbl <- kbl(
 
 # --- Summary tables of all model coefficients from the fully adjusted models --- #
 
-# -- VIF values evidencing the suppressor effect seen when moving from onset and progression models 3 to 4 -- #
+# -- VIF values evidencing the masking effect of waist circumference seen when moving from onset
+# and progression models 3 to 4 -- #
 
 # Check of survey adjusted VIF values of progression model 4 show high significant multicollinearity
-# This is not a problem and explains the the suppressor effect that causes the ALMI coefficient
+# This is not a problem - it explains the effect that causes the ALMI coefficient
 # becoming negative once waist circumference is added to the model.
 
+# Onset
+
 # Design matrix from the model formula and data
-X.prog.4 <- model.matrix(logistic_progression.4$imp1$formula, data = design_list$imp1$variables)
+X.onset.3 <- model.matrix(logistic_onset.3$imp1$formula, data = design_list$imp1$variables)
 # Remove the intercept column
-X.prog.4 <- X.prog.4[, -1]
+X.onset.3 <- X.onset.3[, -1]
 # Extract the survey weights from the design object
 weights <- weights(design_list$imp1)
 # Run svyvif
-prog_vif_values.4 <- svyvif(mobj = logistic_progression.4$imp1, X = X.prog.4, w = weights)
+onset_vif_values.3 <- svyvif(mobj = logistic_onset.3$imp1, X = X.onset.3, w = weights)
 # Print the results
+print(onset_vif_values.3$`Intercept adjusted`)
+
+X.onset.4 <- model.matrix(logistic_onset.4$imp1$formula, data = design_list$imp1$variables)
+X.onset.4 <- X.onset.4[, -1]
+onset_vif_values.4 <- svyvif(mobj = logistic_onset.4$imp1, X = X.onset.4, w = weights)
+print(onset_vif_values.4$`Intercept adjusted`)
+
+# Progression
+
+X.prog.3 <- model.matrix(logistic_progression.3$imp1$formula, data = design_list$imp1$variables)
+X.prog.3 <- X.prog.3[, -1]
+prog_vif_values.3 <- svyvif(mobj = logistic_progression.3$imp1, X = X.prog.3, w = weights)
+print(prog_vif_values.3$`Intercept adjusted`)
+
+X.prog.4 <- model.matrix(logistic_progression.4$imp1$formula, data = design_list$imp1$variables)
+X.prog.4 <- X.prog.4[, -1]
+prog_vif_values.4 <- svyvif(mobj = logistic_progression.4$imp1, X = X.prog.4, w = weights)
 print(prog_vif_values.4$`Intercept adjusted`)
 
 # Before waist circumference is added, there is no evidence of severe multicolinearity,
 # as seen by the weighted VIF values of progression model 3.
 # This further reinforces the findings.
-
-# Design matrix from the model formula and data
-X.prog.3 <- model.matrix(logistic_progression.3$imp1$formula, data = design_list$imp1$variables)
-# Remove the intercept column
-X.prog.3 <- X.prog.3[, -1]
-# Run svyvif
-prog_vif_values.3 <- svyvif(mobj = logistic_progression.3$imp1, X = X.prog.3, w = weights)
-# Print the results
-print(prog_vif_values.3$`Intercept adjusted`)
-
-# --- Forest plots and tables of odds ratios from fully adjusted models --- #
-
-# Useful to visualise coefficient estimates
-
-# Onset Model 10
-
-# --- Step 1: Extract the results into a clean dataframe --- #
-
-# Get the full summary table from the pooled model on the log scale
-onset_model_summary_log <- summary(pooled_logistic_onset.10)
-
-# Create a clean dataframe from this summary object
-onset.forest.plot.data <- data.frame(
-  variable = rownames(onset_model_summary_log),
-  log_rr = onset_model_summary_log$results,
-  log_lower_ci = onset_model_summary_log$`(lower`,
-  log_upper_ci = onset_model_summary_log$`upper)`
-) %>%
-  # Exponentiate everything to get Odds Ratios and their CIs
-  mutate(
-    rr = exp(log_rr),
-    lower_ci = exp(log_lower_ci),
-    upper_ci = exp(log_upper_ci)
-  ) %>%
-  # Remove the intercept row
-  filter(variable != "(Intercept)") %>%
-  mutate(variable = case_when(
-    variable == "Almi" ~ "ALMI",
-    variable == "Age_yrs" ~ "Age",
-    variable == "GenderFemale" ~ "Female",
-    variable == "RaceOther Hispanic" ~ "Hispanic",
-    variable == "RaceNon-Hispanic White" ~ "Non-Hispanic White",
-    variable == "RaceNon-Hispanic Black" ~ "Non-Hispanic Black",
-    variable == "RaceNon-Hispanic Asian" ~ "Non-Hispanic Asian",
-    variable == "RaceOther Race - Including Multi-Racial" ~ "Other Race",
-    variable == "Bfp_perc" ~ "Body Fat Percentage",
-    variable == "WaistCircum_cm" ~ "Waist Circumference",
-    variable == "FamIncPov_Ratio" ~ "Ratio of Family Income to Poverty",
-    variable == "Phys" ~ "Physical Activity",
-    variable == "Hei" ~ "Healthy Eating Index",
-    variable == "Alcohol_StatusFormer Drinker" ~ "Former Drinker",
-    variable == "Alcohol_StatusModerate Drinker" ~ "Moderate Drinker",
-    variable == "Alcohol_StatusHeavy Drinker" ~ "Heavy Drinker",
-    variable == "Smoking_StatusFormer Smoker" ~ "Former Smoker",
-    variable == "Smoking_StatusCurrent Smoker" ~ "Current Smoker",
-    variable == "AvgNightlySleep" ~ "Average Nightly Sleep",
-    TRUE ~ variable  # Keep original name if no match
-  ))
-
-
-# --- Step 2: Create the Forest Plot --- #
-
-ggplot(onset.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
-  # Add the points for the Odds Ratios
-  geom_point(size = 3, color = "darkblue") +
-  
-  # Add the lines for the 95% Confidence Intervals
-  geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2, color = "darkblue") +
-  
-  # Add a vertical line at OR = 1.0 for reference (no effect)
-  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 1) +
-  
-  # Use a logarithmic scale for the x-axis, which is standard for ratio plots
-  scale_x_log10(breaks = c(0.5, 1.0, 1.5, 2.0, 2.5)) +
-  
-  labs(
-    title = "Odds Ratio of Coefficients in the Fully Adjusted Model Onset Model",
-    x = "Odds Ratio",
-    y = "Predictor Variable"
-  )
-
-# Also making a table of these values
-
-# Combining CIs into a single string column
-onset.adjusted.ci.combined <- paste0("(", sprintf("%.3f", onset.forest.plot.data$lower_ci), ", ", sprintf("%.3f", onset.forest.plot.data$upper_ci), ")")
-
-# Dataframe for table
-onset.adjusted.summary.df <- onset.forest.plot.data[,c(1,5)] %>%
-  rename(
-    Predictor = variable,
-    `Odds Ratio (OR)` = rr
-  ) %>%
-  mutate(
-    `95% Confidence Interval (OR)` = onset.adjusted.ci.combined
-  )
-
-# Creating table
-onset.adjusted.summary.tbl.kbl <- kbl(
-  onset.adjusted.summary.df,
-  format = "latex",
-  booktabs = TRUE,
-  linesep = "",
-  digits = c(NA, 3, NA),
-  align = c("l", "r", "r")
-) %>%
-  kable_styling(
-    font_size = 10
-  ) %>%
-  add_header_above(
-    c("Coefficient Estimates and 95% Confidence Intervals" = 3),
-    bold = FALSE
-  ) 
-
-# Progression Model 10
-
-# --- Step 1: Extract the results into a clean dataframe --- #
-
-# Get the full summary table from the pooled model on the log scale
-prog_model_summary_log <- summary(pooled_logistic_progression.10)
-
-# Create a clean dataframe from this summary object
-prog.forest.plot.data <- data.frame(
-  variable = rownames(prog_model_summary_log),
-  log_rr = prog_model_summary_log$results,
-  log_lower_ci = prog_model_summary_log$`(lower`,
-  log_upper_ci = prog_model_summary_log$`upper)`
-) %>%
-  # Exponentiate everything to get Odds Ratios and their CIs
-  mutate(
-    rr = exp(log_rr),
-    lower_ci = exp(log_lower_ci),
-    upper_ci = exp(log_upper_ci)
-  ) %>%
-  # Remove the intercept row, as we don't usually plot it
-  filter(variable != "(Intercept)") %>%
-  mutate(variable = case_when(
-    variable == "Almi" ~ "ALMI",
-    variable == "Age_yrs" ~ "Age",
-    variable == "GenderFemale" ~ "Female",
-    variable == "RaceOther Hispanic" ~ "Hispanic",
-    variable == "RaceNon-Hispanic White" ~ "Non-Hispanic White",
-    variable == "RaceNon-Hispanic Black" ~ "Non-Hispanic Black",
-    variable == "RaceNon-Hispanic Asian" ~ "Non-Hispanic Asian",
-    variable == "RaceOther Race - Including Multi-Racial" ~ "Other Race",
-    variable == "Bfp_perc" ~ "Body Fat Percentage",
-    variable == "WaistCircum_cm" ~ "Waist Circumference",
-    variable == "FamIncPov_Ratio" ~ "Ratio of Family Income to Poverty",
-    variable == "Phys" ~ "Physical Activity",
-    variable == "Hei" ~ "Healthy Eating Index",
-    variable == "Alcohol_StatusFormer Drinker" ~ "Former Drinker",
-    variable == "Alcohol_StatusModerate Drinker" ~ "Moderate Drinker",
-    variable == "Alcohol_StatusHeavy Drinker" ~ "Heavy Drinker",
-    variable == "Smoking_StatusFormer Smoker" ~ "Former Smoker",
-    variable == "Smoking_StatusCurrent Smoker" ~ "Current Smoker",
-    variable == "AvgNightlySleep" ~ "Average Nightly Sleep",
-    TRUE ~ variable  # Keep original name if no match
-  ))
-
-# --- Step 2: Create the Forest Plot  --- #
-
-ggplot(prog.forest.plot.data, aes(x = rr, y = reorder(variable, rr))) +
-  # Add the points for the Odds Ratios
-  geom_point(size = 3, color = "darkblue") +
-  
-  # Add the lines for the 95% Confidence Intervals
-  geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2, color = "darkblue") +
-  
-  # Add a vertical line at OR = 1.0 for reference (no effect)
-  geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 1) +
-  
-  # Use a logarithmic scale for the x-axis, which is standard for ratio plots
-  scale_x_log10(breaks = c(0.5, 1.0, 1.5, 2.0, 2.5)) +
-  
-  labs(
-    title = "Odds Ratio of Coefficients in the Fully Adjusted Progression Model",
-    x = "Odds Ratio",
-    y = "Predictor Variable"
-  )
-
-# Now making a table for these values
-
-# Combining CIs into a single string column
-prog.adjusted.ci.combined <- paste0("(", sprintf("%.3f", prog.forest.plot.data$lower_ci), ", ", sprintf("%.3f", prog.forest.plot.data$upper_ci), ")")
-
-# Dataframe for table
-prog.adjusted.summary.df <- prog.forest.plot.data[,c(1,5)] %>%
-  rename(
-    Predictor = variable,
-    `Odds Ratio (OR)` = rr
-  ) %>%
-  mutate(
-    `95% Confidence Interval (OR)` = prog.adjusted.ci.combined
-  )
-
-# Creating table
-prog.adjusted.summary.tbl.kbl <- kbl(
-  prog.adjusted.summary.df,
-  format = "latex",
-  booktabs = TRUE,
-  linesep = "",
-  digits = c(NA, 3, NA),
-  align = c("l", "r", "r")
-) %>%
-  kable_styling(
-    font_size = 10
-  ) %>%
-  add_header_above(
-    c("Coefficient Estimates and 95% Confidence Intervals" = 3),
-    bold = FALSE
-  ) 
