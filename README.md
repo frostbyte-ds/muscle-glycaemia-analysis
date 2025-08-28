@@ -64,7 +64,7 @@ This project requires R and RStudio. All necessary R packages are listed in the 
 ## License
 
 ### Code
-The code in this repository is licensed under the [MIT License](LICENSE).
+The code in this repository is licensed under the [MIT License](LICENSE.md).
 
 ### Text / Documentation
 The text, figures, and documentation in this repository are licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
