@@ -2,8 +2,13 @@
 
 **Author:** James Frost **Date:** July 20, 2025
 
+[![DOI](https://zenodo.org/badge/1022834638.svg)](https://doi.org/10.5281/zenodo.16990116)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)
+
+## How to Cite
+Frost, J.A. (2025). *The Independent and Stage-Specific Role of Skeletal Muscle in Glycaemic Control: A Cross-Sectional Analysis of the NHANES 2011–2018 Data*. MSc Dissertation, University of Exeter. DOI: https://doi.org/10.5281/zenodo.16990116
+
 
 ------------------------------------------------------------------------
 
