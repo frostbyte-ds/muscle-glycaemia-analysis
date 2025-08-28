@@ -2,6 +2,9 @@
 
 **Author:** James Frost **Date:** July 20, 2025
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)
+
 ------------------------------------------------------------------------
 
 ## Overview
@@ -53,3 +56,13 @@ The data used in this analysis is publicly available from the **National Health 
 ## Dependencies
 
 This project requires R and RStudio. All necessary R packages are listed in the `scripts/00_packages.R` script and can be installed by running that file.
+
+## License
+
+### Code
+The code in this repository is licensed under the [MIT License](LICENSE).
+
+### Text / Documentation
+The text, figures, and documentation in this repository are licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+
+This repository contains original work developed as part of my MSc dissertation at the University of Exeter, 2025.

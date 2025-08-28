@@ -1,0 +1,1 @@
+The Independent Role of Skeletal Muscle in Glycaemic Control A Cross-Sectional Analysis of the NHANES 2011-2018 Data © 2025 by James Andrew Frost is licensed under Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-nd/4.0/
