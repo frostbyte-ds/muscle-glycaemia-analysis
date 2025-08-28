@@ -44,7 +44,7 @@ To reproduce the analysis, please follow these steps:
 -   `.gitignore`: Specifies which files and folders to exclude from version control.
 -   `scripts/`: A folder containing all the R scripts for the analysis, numbered in the order they should be run.
 -   `template/`: A folder containing LaTeX files needed for the custom title page when rendering the Quarto document.
--   `Uni-Exeter-logo-portrait-1.png`: The University of Exeter logo needed for rendering the custom title page.
+-   `Uni-Exeter-logo-portrait-1.png`: The University of Exeter logo, also needed for the custom title page.
 
 ------------------------------------------------------------------------
 
