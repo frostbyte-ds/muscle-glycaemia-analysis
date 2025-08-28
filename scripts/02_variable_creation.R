@@ -32,10 +32,11 @@ xsec.data1718 <- multi_inner_join(dfs1718) %>%
 
 # Array of variables needed from each time period
 vars1112 <- c(
-  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",  # Survey structure and demographics
+  "SEQN", "SDMVPSU", "SDMVSTRA", "WTMEC2YR", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "INDFMPIR",  # Survey structure and
+  # demographics
   "BMXHT", "BMXWAIST",  # Body measures
   "LBXGH",  # HbA1c
-  "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",  # Lean muscle in the limbs
+  "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",  # Lean mass in the limbs excl. bone mass
   "PAQ665", "PAD675", "PAQ650", "PAD660",  # Physical activity
   "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",  # Alcohol consumption
   "SMQ040", "SMQ020",  # Smoking habits
@@ -83,7 +84,7 @@ vars1718 <- c(
   "SurveyCycle"
 )
 
-# Extracting them for each time period
+# Extracting variables for each time period
 imputation_vars1112 <- xsec.data1112 %>% select(all_of(vars1112))
 imputation_vars1314 <- xsec.data1314 %>% select(all_of(vars1314))
 imputation_vars1516 <- xsec.data1516 %>% select(all_of(vars1516))
@@ -185,7 +186,7 @@ imputation_vars_full.2 <- imputation_vars_full %>%
       ALQ110 %in% c(7, 9) ~ NA_character_, 
       # Otherwise, keep the original ALQ110 value for now
       SurveyCycle %in% c("2011-2012", "2013-2014", "2015-2016") ~ as.character(ALQ110),
-      TRUE ~ NA_character_ # This column doesn't exist in other cycles
+      TRUE ~ NA_character_ # This column doesn't exist in the 2017-2018 cycle
     )
   ) %>%
   
@@ -210,30 +211,29 @@ imputation_vars_full.2 <- imputation_vars_full %>%
     
     # Convert the character column to a factor and set the levels
     LifetimeDrinkerFlag = factor(LifetimeDrinkerFlag, 
-                                   levels = c("Never", "Ever"))
+                                 levels = c("Never", "Ever"))
   ) %>%
   
   # --- Step 6: Final selection ---
-  select(-c("ALQ120Q", "ALQ130", "ALQ101", "ALQ110", "ALQ121", "ALQ111", "Drinking_Days_Per_Year", "Clean_ALQ110", "Clean_ALQ130"))
+  select(-c("ALQ120Q", "ALQ130", "ALQ101", "ALQ110", "ALQ121", "ALQ111", "Drinking_Days_Per_Year", "Clean_ALQ110",
+            "Clean_ALQ130"))
 
 
 # ---- Cleaning smoking variables ---- #
 
 imputation_vars_full.3 <- imputation_vars_full.2 %>%
   mutate(
-    # Use case_when for clear, ordered logic.
     Smoking_Status = factor(case_when(
       
       # Condition 1: If they answered "No" to ever smoking 100 cigarettes, they are a Never Smoker.
-      # The code for "No" is 2.
       SMQ020 == "No" ~ "Never Smoker",
       
       # Condition 2: If they HAVE smoked 100 cigarettes (SMQ020 == 1),
-      # then we look at their answer to SMQ040.
+      # then look at their answer to SMQ040.
       SMQ020 == "Yes" ~ case_when(
-        # If they smoke "Every day" (1) or "Some days" (2), they are a Current Smoker.
+        # If they smoke "Every day" or "Some days", they are a Current Smoker.
         SMQ040 %in% c("Every day", "Some days") ~ "Current Smoker",
-        # If they answered "Not at all" (3), they are a Former Smoker.
+        # If they answered "Not at all", they are a Former Smoker.
         SMQ040 == "Not at all" ~ "Former Smoker",
         # Handle any remaining special codes (like Refused/Don't Know) as NA
         TRUE ~ NA_character_
@@ -251,19 +251,31 @@ imputation_vars_full.3 <- imputation_vars_full.2 %>%
 
 imputation_vars_full.4 <- imputation_vars_full.3 %>%
   mutate(
-    # Create a single, harmonised sleep variable by selecting the correct column
+    # Create a single, harmonised sleep variable in hours
     AvgNightlySleep = case_when(
-      SurveyCycle %in% c("2011-2012", "2013-2014") ~ SLD010H,
-      SurveyCycle %in% c("2015-2016", "2017-2018") ~ SLD012,
-      TRUE ~ NA_real_ # Fallback for any other case
-    ),
-    
-    # Now, clean the new 'AvgNightlySleep' variable in a single step
-    # This handles special codes (77, 99)
-    AvgNightlySleep = ifelse(AvgNightlySleep %in% c(77, 99), NA_real_, AvgNightlySleep)
+      
+      # For 2011-2014 cycles, use SLD010H
+      SurveyCycle %in% c("2011-2012", "2013-2014") & SLD010H %in% c(77, 99) ~ NA_real_,
+      SurveyCycle %in% c("2011-2012", "2013-2014") ~ SLD010H, # Treat the top-code of 12 as 12
+      
+      # For the 2015-2016 cycle, use SLD012
+      SurveyCycle == "2015-2016" & SLD012 > 24 ~ NA_real_, # General plausibility check
+      SurveyCycle == "2015-2016" ~ SLD012,
+      
+      # For the 2017-2018 cycle, calculate the weighted average
+      SurveyCycle == "2017-2018" ~ {
+        # Handle the special codes first
+        weekday_sleep <- ifelse(SLD012 > 24, NA, SLD012)
+        weekend_sleep <- ifelse(SLD013 > 24, NA, SLD013)
+        
+        # Calculate the weighted average
+        ((weekday_sleep * 5) + (weekend_sleep * 2)) / 7
+      },
+      
+      # A fall-back for any other case
+      TRUE ~ NA_real_
+    )
   ) %>%
-  
-  # Select out all original sleep variables and survey cycle label
   select(-c("SLD010H", "SLD012", "SLD013", "SurveyCycle"))
 
 # Final adjustments pre-imputation

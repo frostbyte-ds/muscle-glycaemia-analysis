@@ -39,7 +39,7 @@ library(heiscore) # For HEI scores
 library(car) # For useful analysis tools
 library(svydiags) # For diagnostics of svyglms
 library(miceadds) # For micombine.F
-library(gt) # For tables
+library(kableExtra) # For tables
 library(arm) # For binned residual plots
 library(gridExtra) # For presentation of visualisations
-library(WeightedROC) # For survey weighted ROC and AUC calculations 
+library(WeightedROC) # For survey weighted ROC and AUC calculations

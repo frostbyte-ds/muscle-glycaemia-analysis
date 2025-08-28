@@ -2,19 +2,16 @@
 # K-Fold Cross Validation
 # ----------------------- #
 
-# Seek to choose one imputation and conduct k-fold cross validation parsimonious
-# progression model 4
+# Seek to choose one imputation and conduct k-fold cross validation on Progression model 4
 
 # Goal is to assess how well the model performance would be when trained using other datasets
 
 # Using 5-fold cross validation for 10 repeats
 
-# There is no neat function to do this for svyglms in the way that is required, so will use a
-# custom algorithm
+# Using a custom algorithm for flexibility
 
-# The algorithm will calculate the optimal threshold my maximising Youden’s J statistic.
-# This is the same as choosing the cut-off point closest to the (0, 1) corner of the ROC plane.
-# This will of course be done using the training data for each loop.
+# The algorithm will calculate the optimal threshold my maximising Youden’s J statistic
+# This will be done using the training data for each loop
 
 # Also calculating the sensitivity and specificity for each loop for further helpful diagnostics
 
@@ -30,7 +27,7 @@ n_repeats <- 10
 # Setting seed for reproducibility
 set.seed(123) 
 
-# Dataframe to store summary results per repeat
+# Data frame to store summary results per repeat
 repeat_summary <- data.frame(
   `repeat` = integer(n_repeats),
   mean_weighted_auc = numeric(n_repeats),
@@ -48,7 +45,7 @@ for (rep in 1:n_repeats) {
   # Assign new folds for this repeat
   imp1.2$fold_id <- sample(rep(1:k, length.out = nrow(imp1.2)))
   
-  # Initialize storage
+  # Initialise storage
   weighted_aucs <- numeric(k)
   optimal_thresholds <- numeric(k)
   weighted_errors <- numeric(k)
@@ -152,11 +149,11 @@ for (rep in 1:n_repeats) {
 # all repeats for each metric.
 cv_summary_long <- data.frame(
   Metric = c(
-    "Weighted AUC",
+    "AUC",
     "Optimal Threshold",
     "Sensitivity",
     "Specificity",
-    "Weighted Accuracy"
+    "Accuracy"
   ),
   Value = c(
     mean(repeat_summary$mean_weighted_auc),
@@ -168,7 +165,7 @@ cv_summary_long <- data.frame(
 )
 
 # Identify which metrics should be formatted as percentages
-percent_metrics <- c("Sensitivity", "Specificity", "Weighted Accuracy")
+percent_metrics <- c("Sensitivity", "Specificity", "Accuracy")
 
 # Create a new, formatted data frame
 cv_results_formatted_df <- cv_summary_long %>%
@@ -233,8 +230,9 @@ roc_plot <- ggplot(roc_obj, aes(x = FPR, y = TPR)) +
   labs(
     x = "False Positive Rate (1 - Specificity)",
     y = "True Positive Rate (Sensitivity)",
-    title = "ROC Curve with Optimal Threshold Highlighted"
-  ) 
+    title = "Progression Model 4 ROC Curve"
+  ) +
+  theme_dissertation()
 
 # Display the plot
 roc_plot

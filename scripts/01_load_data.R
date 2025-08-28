@@ -5,10 +5,10 @@
 # 2011-12
 
 # Demographics
-demo1112 <-nhanes("DEMO_G")
-# Body Measures (for height and weight to calculate BMI)
+demo1112 <- nhanes("DEMO_G")
+# Body Measures (for height measurements to calculate ALMI)
 body1112 <- nhanes("BMX_G")
-# Glycohemoglobin (HbA1c)
+# Glycohaemoglobin (HbA1c)
 HbA1c1112 <- nhanes("GHB_G")
 # DXA data (for appendicular lean mass)
 dexa1112 <- nhanes("DXX_G")
@@ -25,7 +25,7 @@ sleep1112 <- nhanes("SLQ_G")
 
 # 2013-14
 
-demo1314 <-nhanes("DEMO_H")
+demo1314 <- nhanes("DEMO_H")
 body1314 <- nhanes("BMX_H")
 HbA1c1314 <- nhanes("GHB_H")
 dexa1314 <- nhanes("DXX_H")
@@ -37,7 +37,7 @@ sleep1314 <- nhanes("SLQ_H")
 
 # 2015-16
 
-demo1516 <-nhanes("DEMO_I")
+demo1516 <- nhanes("DEMO_I")
 body1516 <- nhanes("BMX_I")
 HbA1c1516 <- nhanes("GHB_I")
 dexa1516 <- nhanes("DXX_I")
@@ -50,7 +50,7 @@ sleep1516 <- nhanes("SLQ_I")
 # 2017-18
 
 # Demographics
-demo1718 <-nhanes("DEMO_J")
+demo1718 <- nhanes("DEMO_J")
 body1718 <- nhanes("BMX_J")
 HbA1c1718 <- nhanes("GHB_J")
 dexa1718 <- nhanes("DXX_J")

@@ -27,7 +27,7 @@ svy_archer_lemeshow <- function(model, design, groups = 10) {
 
 # Onset
 
-# --- Step 1: Organize all unpooled model lists into a single master list ---
+# --- Step 1: Organize all un-pooled model lists into a single master list ---
 
 all_onset_model_lists <- list(
   logistic_onset,
@@ -82,7 +82,6 @@ for (i in 1:10) {
   final_p_value <- pooled_gof_test[2]
   
   # Add the result to array
-  
   onset.gof.pvalue[i] = final_p_value
   
 }
@@ -141,7 +140,6 @@ for (i in 1:10) {
   final_p_value <- pooled_gof_test[2]
   
   # Add the result to array
-  
   prog.gof.pvalue[i] = final_p_value
   
 }
@@ -198,20 +196,21 @@ names(prog.pseudo.r2.list) <- NULL
 
 # The response variable is binary.
 # The residuals are not expected to be normally distributed.
-# Survey-weighted estimation can distort residual behavior.
+# Survey-weighted estimation can distort residual behaviour.
 
 # binnedplot in the arm package is ideal for this case
 
-# Seek to plot binned residuals of the fully adjusted onset model and parsimonious progression model
-# for the first 9 imputations to assess model fit and if there are any significant
+# Seek to check binned residuals of the fully adjusted onset model and parsimonious progression model
+# for all imputations to assess model fit and if there are any significant
 # differences between imputed datasets
 
-# Onset
-par(mfrow = c(3, 3))
+# Will only include imputation 1 in thesis to save space
 
-# Loop through the first 9 imputations for the onset model
-for (i in 1:9) {
-  # Assuming logistic_onset.4 is a list of model fits
+# Onset
+
+# Loop through the imputations for the onset model
+for (i in 1:30) {
+  
   model_fit <- logistic_onset.10[[i]]
   
   binnedplot(
@@ -229,9 +228,9 @@ for (i in 1:9) {
 
 # Progression
 
-# Loop through the first 9 imputations for the progression model
-for (i in 1:9) {
-  # Assuming logistic_progression.4 is a list of model fits
+# Loop through the imputations for the progression model
+for (i in 1:30) {
+  
   model_fit <- logistic_progression.4[[i]]
   
   binnedplot(
@@ -240,16 +239,14 @@ for (i in 1:9) {
     nclass = NULL,
     xlab = "Expected Values",
     ylab = "Average residual",
-    main = paste("Progression Model - Imputation", i), # Add a dynamic title
+    main = paste("Progression Model - Imputation", i), 
     cex.pts = 0.8,
     col.pts = 1,
     col.int = "gray"
   )
 }
 
-par(mfrow = c(1, 1))
-
-# Both look good - residuals fine
+# Residuals fine for onset model - some patterns evident in progression model
 # No significant differences between imputations
 
 # Now creating binned component + residual plots to justify the choice of linear
@@ -316,7 +313,7 @@ binnedplot(x = onset.sleep.data, y = onset.working.residuals,
            ylab = "Average Working Residual",
            main = "Binned Residuals vs. Average Nightly Sleep")
 
-par(mfrow = c(1, 1))
+par(mfrow = c(2, 2))
 
 # Prog
 prog.model.fit <- logistic_progression.4$imp1
@@ -330,7 +327,6 @@ prog.bfp.data <- prog.model.fit$survey.design$variables$Bfp_perc
 prog.waistcircum.data <- prog.model.fit$survey.design$variables$WaistCircum_cm
 
 # Plotting 
-par(mfrow = c(2, 2))
 
 binnedplot(x = prog.almi.data, y = prog.working.residuals,
            xlab = "ALMI (kg/m²)",
@@ -355,7 +351,6 @@ binnedplot(x = prog.waistcircum.data, y = prog.working.residuals,
 par(mfrow = c(1, 1))
 
 # No evidence that higher order terms are needed
-# Random scatter of residuals largely within the grey lines
 
 # ---- Checking for influential points ---- #
 
@@ -386,12 +381,11 @@ onset_influential_obs$CooksD <- onset.cooks[onset_influential_indices]
 onset_reduced_data <- design_list$imp1$variables[-onset_influential_indices, ]
 
 # Create a new survey design object with this reduced dataset
-# Make sure to use the same formula for strata, id, and weights as the original design
 onset_reduced_design <- svydesign(id = ~PSU, 
-                            strata = ~Strata, 
-                            weights = ~SurvWeight,
-                            nest = TRUE,
-                            data = onset_reduced_data)
+                                  strata = ~Strata, 
+                                  weights = ~SurvWeight,
+                                  nest = TRUE,
+                                  data = onset_reduced_data)
 
 # Refit the model using the reduced design object
 onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm,
@@ -399,7 +393,7 @@ onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender +
                                     family = quasibinomial)
 
 # Almi coefficient is still not significant
-# This means that removing influential points does not change findings
+# This means that removing influential points does not change the findings
 summary(onset_without_influential)
 
 # Now checking this for progression model 4
@@ -410,27 +404,26 @@ prog_cooks_threshold <- quantile(prog.cooks, probs = 0.99)
 prog_influential_indices <- which(prog.cooks > prog_cooks_threshold)
 
 # Creating a data frame with these influential observations
-# Nothing immediately stands out with these
+# Nothing immediately stands out
 prog_influential_obs <- design_list$imp1$variables[prog_influential_indices,]
 prog_influential_obs$CooksD <- prog.cooks[prog_influential_indices]
 
-# Seek to refit the model without these points
+# Refit the model without these points
 
-# Create a new data frame by EXCLUDING the influential rows
+# Create a new data frame without the influential rows
 prog_reduced_data <- design_list$imp1$variables[-prog_influential_indices, ]
 
 # Create a new survey design object with this reduced dataset
-# Make sure to use the same formula for strata, id, and weights as the original design
 prog_reduced_design <- svydesign(id = ~PSU, 
-                                  strata = ~Strata, 
-                                  weights = ~SurvWeight,
-                                  nest = TRUE,
-                                  data = prog_reduced_data)
+                                 strata = ~Strata, 
+                                 weights = ~SurvWeight,
+                                 nest = TRUE,
+                                 data = prog_reduced_data)
 
 # Refit the model using the reduced design object
 prog_without_influential <- svyglm(is_diabetic ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm,
-                                    design = prog_reduced_design, 
-                                    family = quasibinomial)
+                                   design = prog_reduced_design, 
+                                   family = quasibinomial)
 
 # Once again, nothing has significantly changed.
 # Can conclude that findings are robust and not dependant on influential outliers.

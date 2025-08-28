@@ -7,9 +7,9 @@
 # Seek to obtain the mean and standard deviation of each continuous variable, and
 # the count and proportion of each categorical variable from each imputed dataset.
 # The survey structure must be taken into account for these tasks using functions
-# such as svymean for survey-weighted means, and svyvar for survey-weighted variances.
+# such as svymean for survey-weighted means and svyvar for survey-weighted variances.
 
-# These statistics will then be pooled and used to produce a consise summary statistics
+# These statistics will then be pooled and used to produce a concise summary statistics
 # table.
 
 # --- Step 1: Define a function to calculate summary stats for ONE dataset ---
@@ -59,8 +59,8 @@ final_summary <- pooled_results %>%
     .groups = "drop"
   )
 
-# --- Step 3: Format the final table for presentation with gt ---
-# Get total N from the first dataset (it's the same for all)
+# --- Step 3: Format the final table ---
+# Get total N from the first imputation (it's the same for all)
 total_n <- nrow(imputed_1118[[1]])
 
 # Format the continuous and categorical results separately
@@ -91,8 +91,7 @@ variable_order <- c(
   "Never Smoker", "Former Smoker", "Current Smoker"
 )
 
-
-# Combine into the final dataframe for the table
+# Combine into the final data frame for the table
 final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
   mutate(Variable_Clean = case_when(
     Variable == "Almi" ~ "ALMI (kg/m²)",
@@ -131,16 +130,17 @@ final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
   arrange(Variable_Clean) %>%
   # Select the final columns for the table
   select(Variable = Variable_Clean, Value) %>%
+  # Renaming variable column
   rename(Characteristic = Variable)
 
 # --- Create the Table ---
-descriptive_tbl_kbl <- kbl(
+descriptive.tbl.kbl <- kbl(
   final_table_df,
   format = "latex",
   booktabs = TRUE
 ) %>%
   kable_styling(
-    font_size = 9,
+    font_size = 7,
     full_width = FALSE
   ) %>%
   pack_rows("Glycaemic Status (Onset)", 10, 11) %>%
@@ -156,24 +156,29 @@ descriptive_tbl_kbl <- kbl(
     footnote_as_chunk = TRUE
   )
 
+# --- Hierarchical model building tables --- #
+
 # Extracting pooled model ALMI coefficients and confidence intervals
 # Also finding the % change of each ALMI coefficient progressing through the models
 
 # Onset
+
+# Model names
 pooled.onset.names <- c("pooled_logistic_onset", paste0("pooled_logistic_onset.", 2:10))
 
+# ALMI coefficients
 onset.almi.coeffs <- sapply(pooled.onset.names, function(name) {
   model_list <- get(name)
   coef(model_list)["Almi"]
 })
 
+# ALMI confidence intervals
 onset.almi.confint <- sapply(pooled.onset.names, function(name) {
   model_list <- get(name)
   c(confint(model_list)[2,1], confint(model_list)[2,2])
 })
 
 # % changes
-
 onset.percent.changes <- c("N/A")  # First % is NA as there is no comparison
 for (i in 1:9) {
   onset.percent.changes[i+1] <- ((onset.almi.coeffs[i + 1] - onset.almi.coeffs[i]) / abs(onset.almi.coeffs[i])) * 100
@@ -181,20 +186,22 @@ for (i in 1:9) {
 
 # Progression
 
+# Model names
 pooled.prog.names <- c("pooled_logistic_progression", paste0("pooled_logistic_progression.", 2:10))
 
+# ALMI coefficients
 prog.almi.coeffs <- sapply(pooled.prog.names, function(name) {
   model_list <- get(name)
   coef(model_list)["Almi"]
 })
 
+# ALMI confidence intervals
 prog.almi.confint <- sapply(pooled.prog.names, function(name) {
   model_list <- get(name)
   c(confint(model_list)[2,1], confint(model_list)[2,2])
 })
 
 # % changes
-
 prog.percent.changes <- c("N/A")
 for (i in 1:9) {
   prog.percent.changes[i+1] <- ((prog.almi.coeffs[i + 1] - prog.almi.coeffs[i]) / abs(prog.almi.coeffs[i])) * 100
@@ -230,7 +237,7 @@ covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist
 onset.summary.df <- data.frame(
   Model = paste("Model", 1:10),
   `Covariate Changes` = covariates,
-  `Odds Ratio (OR)` = exp(onset.almi.coeffs),
+  `ALMI Odds Ratio (OR)` = exp(onset.almi.coeffs),
   `95% Confidence Interval (OR)` = onset.ci.combined,
   `ALMI Coefficient (log OR)` = onset.almi.coeffs,
   `Percentage Change in Coefficient` = onset.percent.changes.formatted,
@@ -288,7 +295,7 @@ for (i in 2:10) {
 prog.summary.df <- data.frame(
   Model = paste("Model", 1:10),
   `Covariate Changes` = covariates,
-  `Odds Ratio (OR)` = exp(prog.almi.coeffs),
+  `ALMI Odds Ratio (OR)` = exp(prog.almi.coeffs),
   `95% Confidence Interval (OR)` = prog.ci.combined,
   `ALMI Coefficient (log OR)` = prog.almi.coeffs,
   `Percentage Change in Coefficient` = prog.percent.changes.formatted,
@@ -322,8 +329,6 @@ prog.summary.table.kbl <- kbl(
   column_spec(column = 7, width = "5em") %>%
   column_spec(column = 8, width = "5em")
 
-# --- Summary tables of all model coefficients from the fully adjusted models --- #
-
 # -- VIF values evidencing the masking effect of waist circumference seen when moving from onset
 # and progression models 3 to 4 -- #
 
@@ -333,6 +338,7 @@ prog.summary.table.kbl <- kbl(
 
 # Onset
 
+# Model 3
 # Design matrix from the model formula and data
 X.onset.3 <- model.matrix(logistic_onset.3$imp1$formula, data = design_list$imp1$variables)
 # Remove the intercept column
@@ -344,6 +350,7 @@ onset_vif_values.3 <- svyvif(mobj = logistic_onset.3$imp1, X = X.onset.3, w = we
 # Print the results
 print(onset_vif_values.3$`Intercept adjusted`)
 
+# Model 4
 X.onset.4 <- model.matrix(logistic_onset.4$imp1$formula, data = design_list$imp1$variables)
 X.onset.4 <- X.onset.4[, -1]
 onset_vif_values.4 <- svyvif(mobj = logistic_onset.4$imp1, X = X.onset.4, w = weights)
@@ -351,16 +358,18 @@ print(onset_vif_values.4$`Intercept adjusted`)
 
 # Progression
 
+# Model 3
 X.prog.3 <- model.matrix(logistic_progression.3$imp1$formula, data = design_list$imp1$variables)
 X.prog.3 <- X.prog.3[, -1]
 prog_vif_values.3 <- svyvif(mobj = logistic_progression.3$imp1, X = X.prog.3, w = weights)
 print(prog_vif_values.3$`Intercept adjusted`)
 
+# Model 4
 X.prog.4 <- model.matrix(logistic_progression.4$imp1$formula, data = design_list$imp1$variables)
 X.prog.4 <- X.prog.4[, -1]
 prog_vif_values.4 <- svyvif(mobj = logistic_progression.4$imp1, X = X.prog.4, w = weights)
 print(prog_vif_values.4$`Intercept adjusted`)
 
-# Before waist circumference is added, there is no evidence of severe multicolinearity,
+# Before waist circumference is added, there is no evidence of severe multicollinearity,
 # as seen by the weighted VIF values of progression model 3.
 # This further reinforces the findings.

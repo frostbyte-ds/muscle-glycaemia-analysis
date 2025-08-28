@@ -2,7 +2,7 @@
 # Model Predictions
 # ----------------- #
 
-# Using progression model 4 to find predictions of the probability of becoming diabetic vs ALMI
+# Using Progression model 4 to find predictions of the probability of becoming diabetic vs ALMI
 # Predictions will be made on all 30 imputations and then combined using Rubin's Rules
 # Will produce predictions for both male and female because model coefficients suggested
 # odds of diabetes were largely different between men and women
@@ -13,20 +13,20 @@ m <- 30 # Number of imputations
 # Use the first imputed dataset as a template for non-imputed variables and ranges
 template_data <- imputed_1118[[1]]
 
-# Calculate the pooled mean for the IMPUTED continuous variables
+# Calculate the pooled mean for the continuous variables that were involved in imputation
 pooled_mean_bfp <- mean(all_imputed_data$Bfp_perc)
 pooled_mean_waist <- mean(all_imputed_data$WaistCircum_cm)
 
 # For variables that were NOT imputed, take the value from the template
-# This is more efficient as the value is the same across all imputations.
+# This is more efficient as the value is the same across all imputed datasets.
 pooled_mean_age <- mean(template_data$Age_yrs)
 
 # Calculate the mode for Race from the template data
 pooled_mode_race <- names(which.max(table(template_data$Race)))
 
-# --- Step 2: Create prediction dataframes (one for each gender) ---
+# --- Step 2: Create prediction data frames (one for each gender) ---
 
-# Create a sequence of Almi values to predict over
+# Create a sequence of ALMI values to predict over
 almi_range <- seq(min(template_data$Almi),
                   max(template_data$Almi),
                   length.out = 1000)
@@ -69,7 +69,7 @@ prediction_list <- lapply(logistic_progression.4, function(model) {
 # --- Step 4: Pool the Results Using Rubin's Rules ---
 # Now combine the 30 sets of predictions into one final result.
 
-# First, stack all the dataframes from the list into one big dataframe,
+# First, stack all the data frames from the list into one big data frame,
 # adding an ID for each imputation.
 all_predictions <- bind_rows(prediction_list, .id = "imputation_id")
 
@@ -103,14 +103,14 @@ plot_data_pooled <- all_predictions %>%
 
 # --- Step 5: Create the final plot with two lines ---
 
-ggplot(plot_data_pooled, aes(x = Almi, y = pooled_prevalence, color = Gender, fill = Gender)) +
+pred.plot <- ggplot(plot_data_pooled, aes(x = Almi, y = pooled_prevalence, color = Gender, fill = Gender)) +
   # Add the prediction lines
   geom_line(linewidth = 1.2) +
   
   # Add the confidence ribbons
   geom_ribbon(aes(ymin = lower_ci, ymax = upper_ci), alpha = 0.2, linetype = "blank") +
   
-  # Customize colors and labels
+  # Customize colours and labels
   scale_color_manual(values = c("Male" = "blue", "Female" = "red")) +
   scale_fill_manual(values = c("Male" = "blue", "Female" = "red")) +
   

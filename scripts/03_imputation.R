@@ -2,8 +2,6 @@
 # Multiple imputation using Amelia
 # -------------------------------- #
 
-# Imputation
-
 # Good amount of missingness for Amelia to handle
 colSums(is.na(imputation_vars_1118))
 
@@ -19,8 +17,10 @@ bounds_matrix_1118 <- matrix(
     which(names(imputation_vars_1118) == "LeftArmLean_g"),  500,   15000,  # L Arm Lean (g)
     which(names(imputation_vars_1118) == "RightLegLean_g"),  500,   15000,  # R Leg Lean (g)
     which(names(imputation_vars_1118) == "LeftLegLean_g"),  500,   15000,  # L Leg Lean (g)
-    which(names(imputation_vars_1118) == "Phys"),   0,     2000,   # Moderate + Vigorous Recreational Physical Activity (mins)
-    which(names(imputation_vars_1118) == "AvgDailyDrinks"), 0,    20,        # Average # of alcoholic drinks per day for the last year
+    which(names(imputation_vars_1118) == "Phys"),   0,     2000,   # Moderate + Vigorous Recreational Physical
+    # Activity (mins)
+    which(names(imputation_vars_1118) == "AvgDailyDrinks"), 0,    20,        # Average # of alcoholic drinks per day
+    # for the last year
     which(names(imputation_vars_1118) == "HEI"), 0,    100,      # Healthy Eating Index (HEI)
     which(names(imputation_vars_1118) == "AvgNightlySleep"),     2,     15   # Average hours of sleep per night
   ),
@@ -30,24 +30,31 @@ bounds_matrix_1118 <- matrix(
 
 # Run Amelia
 amelia_out_1118 <- amelia(imputation_vars_1118, m = 30,
-                                idvars = c("ID", "PSU", "Strata", "SurvWeight"),
-                                noms = c("Gender", "Race", "LifetimeDrinkerFlag", "Smoking_Status"),
-                                bounds = bounds_matrix_1118,
-                                parallel = "multicore",
-                                ncpus  = 15)    
+                          idvars = c("ID", "PSU", "Strata", "SurvWeight"),
+                          noms = c("Gender", "Race", "LifetimeDrinkerFlag", "Smoking_Status"),
+                          bounds = bounds_matrix_1118,
+                          parallel = "multicore",
+                          ncpus  = 15) # Utilises more CPU cores to speed up processing. Set to # of cores - 1.   
 
-# Feature engineering to form ALMI, alcohol status, and hba1c outcome variables
+# Feature engineering to form ALMI, alcohol status, and HbA1c outcome variables
 # Also removing redundant columns 
 imputed_1118 <- lapply(amelia_out_1118$imputations, function(df) {
   df %>%
+    # ALMI
     mutate(
       Alm_kg = (RightArmLean_g + LeftArmLean_g + RightLegLean_g + LeftLegLean_g) / 1000,
       Almi = Alm_kg / (Height_m^2),
     ) %>%
     
     # Creating Alcohol_Status variable
+    
+    # Need to first ensure AvgDailyDrinks is 0 when LifetimeDrinkerFlag is "Never" again.
+    # Imputation will have introduced instances where this does not occur due to 
+    # missing data in LifetimeDrinkerFlag 
+    
+    mutate(AvgDailyDrinks = ifelse(LifetimeDrinkerFlag == "Never", 0, AvgDailyDrinks)) %>%
+    
     mutate(
-      # Create the final 4-level 'Alcohol_Status' factor
       Alcohol_Status = factor(case_when(
         
         # Condition 1: Never Drinkers
@@ -57,7 +64,7 @@ imputed_1118 <- lapply(amelia_out_1118$imputations, function(df) {
         # They have drunk in their life ("Ever") but their current average is 0
         LifetimeDrinkerFlag == "Ever" & AvgDailyDrinks == 0 ~ "Former Drinker",
         
-        # Condition 3: Heavy Drinkers (among current drinkers)
+        # Condition 3: Heavy Drinkers
         Gender == "Female" & AvgDailyDrinks > 1 ~ "Heavy Drinker",
         Gender == "Male" & AvgDailyDrinks > 2 ~ "Heavy Drinker",
         
@@ -72,14 +79,14 @@ imputed_1118 <- lapply(amelia_out_1118$imputations, function(df) {
     ) %>%
     
     mutate(
-      # Outcome for Model 1: At Risk or Worse
+      # Outcome for Onset models: At Risk or Worse
       # Ensure this is numeric 0/1
       at_risk_or_worse = ifelse(Hba1c_perc >= 5.7, 1, 0),
       
-      # Outcome for Model 2: Has Diabetes
-      # This is the crucial change for the model that was causing the error
+      # Outcome for Progression models: Has Diabetes
       is_diabetic = ifelse(Hba1c_perc >= 6.5, 1, 0)
     ) %>%
     
-    select(-c(RightArmLean_g, LeftArmLean_g, RightLegLean_g, LeftLegLean_g, Alm_kg, AvgDailyDrinks, LifetimeDrinkerFlag))
+    select(-c(RightArmLean_g, LeftArmLean_g, RightLegLean_g, LeftLegLean_g, Alm_kg, AvgDailyDrinks,
+              LifetimeDrinkerFlag))
 })
