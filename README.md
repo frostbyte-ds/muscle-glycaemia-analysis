@@ -35,8 +35,8 @@ To reproduce the analysis, please follow these steps:
     -   Fit the final logistic regression models (`05_modelling.R`).
     -   Run model diagnostics (`06_diagnostics.R`).
     -   Generate summary tables (`07_summaries.R`).
-    -   Perform cross-validation (`08_crossvalidation.R`).
-    -   Generate final predictions and plots (`09_prediction.R`).
+    -   Generate and plot predictions (`08_prediction.R`).
+    -   Perform cross-validation (`09_crossvalidation.R`).
     -   Save all of the final figures and tables for the report (`10_saving_assets`).
 5.  **Render the Dissertation:** Open `Dissertation.qmd` and click "Render" to generate the final PDF document of the dissertation, which embeds the results from the analysis.
 
