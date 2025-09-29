@@ -1,6 +1,6 @@
 # The Independent Role of Skeletal Muscle in Glycaemic Control: A Cross-Sectional Analysis of the NHANES 2011-2018 Data
 
-**Author:** James Frost **Date:** July 20, 2025
+**Author:** James Frost **Date:** August 29, 2025
 
 [![DOI](https://zenodo.org/badge/1022834638.svg)](https://doi.org/10.5281/zenodo.16990116)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
