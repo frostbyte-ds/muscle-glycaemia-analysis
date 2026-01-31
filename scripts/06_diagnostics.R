@@ -388,7 +388,8 @@ onset_reduced_design <- svydesign(id = ~PSU,
                                   data = onset_reduced_data)
 
 # Refit the model using the reduced design object
-onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm,
+onset_without_influential <- svyglm(at_risk_or_worse ~ Almi + Age_yrs + Gender + Race + Bfp_perc + WaistCircum_cm + FamIncPov_Ratio + Phys + HEI
+                                    + Alcohol_Status + Smoking_Status + AvgNightlySleep,
                                     design = onset_reduced_design, 
                                     family = quasibinomial)
 

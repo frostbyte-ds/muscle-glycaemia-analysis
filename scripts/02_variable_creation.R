@@ -37,7 +37,7 @@ vars1112 <- c(
   "BMXHT", "BMXWAIST",  # Body measures
   "LBXGH",  # HbA1c
   "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",  # Lean mass in the limbs excl. bone mass
-  "PAQ665", "PAD675", "PAQ650", "PAD660",  # Physical activity
+  "PAQ620", "PAD630", "PAQ665", "PAD675", "PAQ605", "PAD615", "PAQ650", "PAD660",  # Physical activity - now including vig & mod work activity
   "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",  # Alcohol consumption
   "SMQ040", "SMQ020",  # Smoking habits
   "score",  # Healthy Eating Index score
@@ -50,7 +50,7 @@ vars1314 <- c(
   "BMXHT", "BMXWAIST",
   "LBXGH",
   "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",
-  "PAQ665", "PAD675", "PAQ650", "PAD660",
+  "PAQ620", "PAD630", "PAQ665", "PAD675", "PAQ605", "PAD615", "PAQ650", "PAD660",
   "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",
   "SMQ040", "SMQ020",
   "score",
@@ -63,7 +63,7 @@ vars1516 <- c(
   "BMXHT", "BMXWAIST",
   "LBXGH",
   "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",
-  "PAQ665", "PAD675", "PAQ650", "PAD660",
+  "PAQ620", "PAD630", "PAQ665", "PAD675", "PAQ605", "PAD615", "PAQ650", "PAD660",
   "ALQ120Q", "ALQ130", "ALQ101", "ALQ110",
   "SMQ040", "SMQ020",
   "score",
@@ -76,7 +76,7 @@ vars1718 <- c(
   "BMXHT", "BMXWAIST",
   "LBXGH",
   "DXDRALE", "DXDLALE", "DXDRLLE", "DXDLLLE", "DXDTOPF",
-  "PAQ665", "PAD675", "PAQ650", "PAD660",
+  "PAQ620", "PAD630", "PAQ665", "PAD675", "PAQ605", "PAD615", "PAQ650", "PAD660",
   "ALQ121", "ALQ130", "ALQ111",
   "SMQ040", "SMQ020",
   "score",
@@ -99,35 +99,59 @@ imputation_vars_full <- bind_rows(
 )
 
 # Need to set PAD675 to 0 where PAQ665 is "No" AND set PAD660 to 0 where PAQ650 is "No".
-# Also need to set PAD675 and PAD660 to NA whenever they are 9999 
+# Also need to set PAD675 and PAD660 to NA whenever they are 9999
+
+# Now also doing so for variables relating to work-related physical activity
+# Aim to create a total daily physical activity variable (work + recreational)
 
 # Proportion missing of minutes of moderate and vigorous physical activity
 sum(is.na(imputation_vars_full$PAD660))/nrow(imputation_vars_full) # 69% missing
 sum(is.na(imputation_vars_full$PAD675))/nrow(imputation_vars_full) # 56% missing
+sum(is.na(imputation_vars_full$PAD615))/nrow(imputation_vars_full) # 77% missing
+sum(is.na(imputation_vars_full$PAD630))/nrow(imputation_vars_full) # 60% missing
 
 imputation_vars_full <- imputation_vars_full %>%
   mutate(
-    # For Vigorous Activity (PAD660)
-    # If PAQ650 is 2 ('No') AND PAD660 is currently NA, change it to 0.
+    # For Vigorous Recreational Activity (PAD660)
+    # If PAQ650 is 'No' AND PAD660 is currently NA, change it to 0.
     # Otherwise, leave it as it is.
     PAD660 = ifelse(PAQ650 == "No" & is.na(PAD660), 0, PAD660),
     
     # Assigning NA for "Don't know" code
     PAD660 = ifelse(PAD660 == 9999, NA_real_, PAD660),
     
-    # For Moderate Activity (PAD675)
-    # If PAQ665 is 2 ('No') AND PAD675 is currently NA, change it to 0.
+    # For Vigorous Work Activity (PAD615)
+    # If PAQ605 is 'No' AND PAD615 is currently NA, change it to 0.
+    # Otherwise, leave it as it is.
+    PAD615 = ifelse(PAQ605 == "No" & is.na(PAD615), 0, PAD615),
+    
+    # Assigning NA for "Don't know" code
+    PAD615 = ifelse(PAD615 == 9999, NA_real_, PAD615),
+    
+    # For Moderate Recreational Activity (PAD675)
+    # If PAQ665 is 'No' AND PAD675 is currently NA, change it to 0.
     # Otherwise, leave it as it is.
     PAD675 = ifelse(PAQ665 == "No" & is.na(PAD675), 0, PAD675),
     
     # Assigning NA for "Don't know" code 
-    PAD675 = ifelse(PAD675 == 9999, NA_real_, PAD675)
+    PAD675 = ifelse(PAD675 == 9999, NA_real_, PAD675),
+    
+    # For Moderate Work Activity (PAD630)
+    # If PAQ620 is 'No' AND PAD630 is currently NA, change it to 0.
+    # Otherwise, leave it as it is.
+    PAD630 = ifelse(PAQ620 == "No" & is.na(PAD630), 0, PAD630),
+    
+    # Assigning NA for "Don't know" code 
+    PAD630 = ifelse(PAD630 == 9999, NA_real_, PAD630)
   ) %>%
-  select(-c(PAQ665, PAQ650))
+  select(-c(PAQ665, PAQ650, PAQ605, PAQ620))
 
-# Proportion missing of minutes of moderate and vigorous physical activity after replacement
+# Proportion missing of minutes of physical activity variables after replacement
+
 sum(is.na(imputation_vars_full$PAD660))/nrow(imputation_vars_full) # 0.04% missing
 sum(is.na(imputation_vars_full$PAD675))/nrow(imputation_vars_full) # 0.09% missing
+sum(is.na(imputation_vars_full$PAD615))/nrow(imputation_vars_full) # 0.2% missing
+sum(is.na(imputation_vars_full$PAD630))/nrow(imputation_vars_full) # 0.3% missing
 
 # ---- Cleaning alcohol variables and managing sick quitter effect ---- #
 
@@ -280,7 +304,7 @@ imputation_vars_full.4 <- imputation_vars_full.3 %>%
 
 # Final adjustments pre-imputation
 imputation_vars_1118 <- imputation_vars_full.4 %>%
-  mutate(Phys = PAD660 + PAD675,
+  mutate(Phys = PAD660 + PAD675 + PAD630 + PAD615,
          Height_m = BMXHT / 100) %>%
   select(-c(BMXHT, PAD660, PAD675)) %>%
   rename(
