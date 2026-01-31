@@ -1,6 +1,6 @@
 # The Independent Role of Skeletal Muscle in Glycaemic Control: A Cross-Sectional Analysis of the NHANES 2011-2018 Data
 
-**Author:** James Frost **Date:** July 20, 2025
+**Author:** James Frost **Date:** August 28, 2025
 
 [![DOI](https://zenodo.org/badge/1022834638.svg)](https://doi.org/10.5281/zenodo.16990116)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
@@ -35,8 +35,8 @@ To reproduce the analysis, please follow these steps:
     -   Fit the final logistic regression models (`05_modelling.R`).
     -   Run model diagnostics (`06_diagnostics.R`).
     -   Generate summary tables (`07_summaries.R`).
-    -   Perform cross-validation (`08_crossvalidation.R`).
-    -   Generate final predictions and plots (`09_prediction.R`).
+    -   Generate and plot predictions (`08_prediction.R`).
+    -   Perform cross-validation (`09_crossvalidation.R`).
     -   Save all of the final figures and tables for the report (`10_saving_assets`).
 5.  **Render the Dissertation:** Open `Dissertation.qmd` and click "Render" to generate the final PDF document of the dissertation, which embeds the results from the analysis.
 
