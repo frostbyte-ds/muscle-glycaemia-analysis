@@ -315,9 +315,9 @@ imputation_vars_full.4 <- imputation_vars_full.3 %>%
 
 # Final adjustments pre-imputation
 imputation_vars_1118 <- imputation_vars_full.4 %>%
-  mutate(Phys = PAD660 + PAD675 + PAD630 + PAD615,
+  mutate(Phys = PAD660 + PAD675 + PAD630 + PAD615 + PAD645,
          Height_m = BMXHT / 100) %>%
-  select(-c(BMXHT, PAD660, PAD675)) %>%
+  select(-c(BMXHT, PAD660, PAD675, PAD630, PAD615, PAD645)) %>%
   rename(
     ID = SEQN,
     PSU = SDMVPSU,
@@ -335,4 +335,12 @@ imputation_vars_1118 <- imputation_vars_full.4 %>%
     RightLegLean_g = DXDRLLE,
     LeftLegLean_g = DXDLLLE,
     HEI = score
+  )
+
+# Some values of Phys are over 1440 (24hrs)
+# Setting these to NA for imputation as this is not possible
+
+imputation_vars_1118 <- imputation_vars_1118 %>%
+  mutate(
+    Phys = if_else(Phys > 1440, NA_real_, Phys)
   )
