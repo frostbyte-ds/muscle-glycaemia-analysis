@@ -144,7 +144,7 @@ imputation_vars_full <- imputation_vars_full %>%
     # Assigning NA for "Don't know" code 
     PAD630 = ifelse(PAD630 == 9999, NA_real_, PAD630)
   ) %>%
-  select(-c(PAQ665, PAQ650, PAQ605, PAQ620))
+  select(-c(PAQ665, PAQ650, PAQ605, PAQ620)) # Deselect gatekeeper question variables
 
 # Proportion missing of minutes of physical activity variables after replacement
 
