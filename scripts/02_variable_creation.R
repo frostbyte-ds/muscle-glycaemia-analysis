@@ -326,7 +326,7 @@ imputation_vars_1118 <- imputation_vars_full.4 %>%
     Gender = RIAGENDR,
     Age_yrs = RIDAGEYR,
     Race = RIDRETH3,
-    FamIncPov_Ratio =INDFMPIR,
+    FamIncPov_Ratio = INDFMPIR,
     Bfp_perc = DXDTOPF,
     WaistCircum_cm = BMXWAIST,
     Hba1c_perc = LBXGH,
@@ -337,10 +337,11 @@ imputation_vars_1118 <- imputation_vars_full.4 %>%
     HEI = score
   )
 
-# Some values of Phys are over 1440 (24hrs)
-# Setting these to NA for imputation as this is not possible
+# Some values of Phys are implausibly high
+# Setting these to NA for imputation
+# Using 960 minutes (16 hrs)
 
 imputation_vars_1118 <- imputation_vars_1118 %>%
   mutate(
-    Phys = if_else(Phys > 1440, NA_real_, Phys)
+    Phys = if_else(Phys > 960, NA_real_, Phys)
   )

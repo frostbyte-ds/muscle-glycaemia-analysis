@@ -17,7 +17,7 @@ bounds_matrix_1118 <- matrix(
     which(names(imputation_vars_1118) == "LeftArmLean_g"),  500,   15000,  # L Arm Lean (g)
     which(names(imputation_vars_1118) == "RightLegLean_g"),  500,   15000,  # R Leg Lean (g)
     which(names(imputation_vars_1118) == "LeftLegLean_g"),  500,   15000,  # L Leg Lean (g)
-    which(names(imputation_vars_1118) == "Phys"),   0,     1440,   # MVPA in a typical day (mins)
+    which(names(imputation_vars_1118) == "Phys"),   0,     960,   # MVPA in a typical day (mins)
     which(names(imputation_vars_1118) == "AvgDailyDrinks"), 0,    20,        # Average # of alcoholic drinks per day
     # for the last year
     which(names(imputation_vars_1118) == "HEI"), 0,    100,      # Healthy Eating Index (HEI)
@@ -33,7 +33,7 @@ amelia_out_1118 <- amelia(imputation_vars_1118, m = 30,
                           noms = c("Gender", "Race", "LifetimeDrinkerFlag", "Smoking_Status"),
                           bounds = bounds_matrix_1118,
                           parallel = "multicore",
-                          ncpus  = 15) # Utilises more CPU cores to speed up processing. Set to # of cores - 1.   
+                          ncpus  = 11) # Utilises more CPU cores to speed up processing. Set to result of detectCores() - 1.   
 
 # Feature engineering to form ALMI, alcohol status, and HbA1c outcome variables
 # Also removing redundant columns 

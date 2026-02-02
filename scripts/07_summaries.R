@@ -329,6 +329,73 @@ prog.summary.table.kbl <- kbl(
   column_spec(column = 7, width = "5em") %>%
   column_spec(column = 8, width = "5em")
 
+# --- Forest plot for visualising final ALMI coefficients --- #
+
+# This code is used for producing a forest plot presenting the ALMI coefficient from Onset Model 10
+# and Progression Model 4
+
+# --- Step 1: Extract the results for each model robustly ---
+
+# -- Onset Model --
+# Get the full summary table from the pooled model
+onset_summary <- summary(pooled_logistic_onset.10)
+# Extract each component into its own variable to ensure correct structure
+onset_log_or <- onset_summary["Almi", "results"]
+onset_lower_ci <- onset_summary["Almi", "(lower"]
+onset_upper_ci <- onset_summary["Almi", "upper)"]
+
+# -- Progression Model --
+# Get the full summary table from the pooled model
+prog_summary <- summary(pooled_logistic_progression.4)
+# Extract each component into its own variable
+prog_log_or <- prog_summary["Almi", "results"]
+prog_lower_ci <- prog_summary["Almi", "(lower"]
+prog_upper_ci <- prog_summary["Almi", "upper)"]
+
+
+# --- Step 2: Combine the results into a single, clean dataframe ---
+plot_data_forest <- tibble(
+  Model = c("Onset", "Progression"),
+  log_or = c(onset_log_or, prog_log_or),
+  log_lower_ci = c(onset_lower_ci, prog_lower_ci),
+  log_upper_ci = c(onset_upper_ci, prog_upper_ci)
+) %>%
+  # Exponentiate everything to get Odds Ratios and their CIs
+  mutate(
+    or = exp(log_or),
+    lower_ci = exp(log_lower_ci),
+    upper_ci = exp(log_upper_ci)
+  ) %>%
+  mutate(Model = factor(Model, levels = c("Progression", "Onset")))
+
+# --- Step 3: Create the Forest Plot ---
+almi_forest_plot <- ggplot(plot_data_forest, aes(x = or, y = Model)) +
+  # Add the points for the Odds Ratios
+  geom_point(size = 4, shape = 18, color = "darkblue") +
+  
+  # Add the lines for the 95% Confidence Intervals
+  geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2, linewidth = 1, color = "darkblue") +
+  
+  # Add a vertical line at OR = 1.0 for reference (no effect)
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red", linewidth = 1) +
+  
+  # Use a logarithmic scale for the x-axis, which is standard for ratio plots
+  scale_x_log10() +
+  
+  # Add labels and a title
+  labs(
+    title = "Stage-Specific Association of ALMI with Glycaemic Control",
+    subtitle = "Odds Ratios and 95% Confidence Intervals",
+    x = "Odds Ratio (per 1 kg/m² increase in ALMI)",
+    y = "Model Outcome"
+  ) +
+  
+  # Apply custom theme
+  theme_dissertation()
+
+# Display the final plot
+almi_forest_plot
+
 # -- VIF values evidencing the masking effect of waist circumference seen when moving from onset
 # and progression models 3 to 4 -- #
 
