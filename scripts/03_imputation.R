@@ -33,7 +33,7 @@ amelia_out_1118 <- amelia(imputation_vars_1118, m = 30,
                           noms = c("Gender", "Race", "LifetimeDrinkerFlag", "Smoking_Status"),
                           bounds = bounds_matrix_1118,
                           parallel = "multicore",
-                          ncpus  = 11) # Utilises more CPU cores to speed up processing. Set to result of detectCores() - 1.   
+                          ncpus  = detectCores() - 1) # Utilises more CPU cores to speed up processing.   
 
 # Feature engineering to form ALMI, alcohol status, and HbA1c outcome variables
 # Also removing redundant columns 

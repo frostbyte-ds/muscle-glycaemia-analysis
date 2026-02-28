@@ -2,28 +2,6 @@
 # Loading required packages for the analysis
 # ------------------------------------------ #
 
-# If you need to install any of the packages first, uncomment the following
-# code and run it
-# install.packages("nhanesA") 
-# install.packages("survey") 
-# install.packages("systemfonts") 
-# install.packages("showtext") 
-# install.packages("Amelia") 
-# install.packages("parallel") 
-# install.packages("mice") 
-# install.packages("mitools") 
-# install.packages("svydiags")
-# install.packages("poliscidata") 
-# install.packages("tidyverse") 
-# install.packages("heiscore")
-# install.packages("car") 
-# install.packages("svydiags") 
-# install.packages("miceadds") 
-# install.packages("gt") 
-# install.packages("arm") 
-# install.packages("gridExtra") 
-# install.packages("WeightedROC") 
-
 library(nhanesA) # For NHANES data
 library(survey) # For incorporation of survey design elements
 library(systemfonts) # For fonts
