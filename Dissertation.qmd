@@ -9,7 +9,7 @@ format:
     template-partials:
       - "template/before-body.tex"
       - "template/_titlepage.tex"
-    latex-engine: xelatex
+    pdf-engine: xelatex
     fontsize: 12pt
     geometry: "left=2cm, right=2cm, top=3cm, bottom=3cm"
     fig-pos: 'H'

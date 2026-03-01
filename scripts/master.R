@@ -55,3 +55,9 @@ message(">>> Starting Pipeline: 10 Saving Assets")
 source(here("scripts", "10_saving_assets.R"), local = FALSE)
 
 message("\n--- ALL SCRIPTS COMPLETED SUCCESSFULLY ---")
+
+# Running the .qmd file to render the thesis
+message(">>> Rendering document...")
+quarto_render(here("Dissertation.qmd"))
+
+message("\n--- RENDER COMPLETE ---")

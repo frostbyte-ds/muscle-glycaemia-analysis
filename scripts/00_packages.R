@@ -21,3 +21,4 @@ library(kableExtra) # For tables
 library(arm) # For binned residual plots
 library(gridExtra) # For presentation of visualisations
 library(WeightedROC) # For survey weighted ROC and AUC calculations
+library(quarto) # For rendering the report from the master script
