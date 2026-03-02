@@ -2,10 +2,7 @@
 # Master script for running the analysis
 # ------------------------------------- #
 
-# To run all required scripts, simply execute this script
-
-# Be sure that you have read and executed 00_packages.R prior to this script
-# You may need 
+# To run all required analyses, simply execute this script
 
 # Ensuring empty environment
 rm(list = ls())
