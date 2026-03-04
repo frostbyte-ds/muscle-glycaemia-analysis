@@ -10,8 +10,13 @@ rm(list = ls())
 # Ensures all packages needed for the analysis are installed
 renv::restore(prompt=FALSE)
 
-# Now running each script sequentially
+# Installs tinytex if not already installed
+if (!tinytex::is_tinytex()) {
+  message("TinyTeX not found. Installing via Quarto...")
+  system("quarto install tinytex")
+}
 
+# Now running each script sequentially
 message("\n>>> Starting Pipeline: 00 Packages")
 source("scripts/00_packages.R")
 
