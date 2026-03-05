@@ -80,10 +80,10 @@ formatted_categorical <- final_summary %>%
 variable_order <- c(
   # Continuous Variables
   "Age (years)", "ALMI (kg/m²)", "HbA1c (%)", "Body Fat Percentage (%)",
-  "Waist Circumference (cm)", "Poverty Income Ratio", "Physical Activity (mins/day)",
+  "Waist Circumference (cm)", "Poverty Income Ratio", "MVPA (mins/day)",
   "Healthy Eating Index", "Average Nightly Sleep (hours)",
   # Categorical Variables
-  "Normal HbA1c", "Elevated HbA1c", "Non-Diabetic", "Diabetic",
+  "Normal HbA1c", "Elevated HbA1c", "No Diabetes", "Diabetes",
   "Male", "Female",
   "Mexican American", "Hispanic", "Non-Hispanic White",
   "Non-Hispanic Black", "Non-Hispanic Asian", "Other Race",
@@ -98,8 +98,8 @@ final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
     Variable == "Hba1c_perc" ~ "HbA1c (%)",
     Variable == "at_risk_or_worse, 0" ~ "Normal HbA1c",
     Variable == "at_risk_or_worse, 1" ~ "Elevated HbA1c",
-    Variable == "is_diabetic, 0" ~ "Non-Diabetic",
-    Variable == "is_diabetic, 1" ~ "Diabetic",
+    Variable == "is_diabetic, 0" ~ "No Diabetes",
+    Variable == "is_diabetic, 1" ~ "Diabetes",
     Variable == "Age_yrs" ~ "Age (years)",
     Variable == "Gender, Male" ~ "Male",
     Variable == "Gender, Female" ~ "Female",
@@ -112,7 +112,7 @@ final_table_df <- bind_rows(formatted_continuous, formatted_categorical) %>%
     Variable == "Bfp_perc" ~ "Body Fat Percentage (%)",
     Variable == "WaistCircum_cm" ~ "Waist Circumference (cm)",
     Variable == "FamIncPov_Ratio" ~ "Poverty Income Ratio",
-    Variable == "Phys" ~ "Physical Activity (mins/day)",
+    Variable == "Phys" ~ "MVPA (mins/day)",
     Variable == "HEI" ~ "Healthy Eating Index",
     Variable == "Alcohol_Status, Never Drinker" ~ "Never Drinker",
     Variable == "Alcohol_Status, Former Drinker" ~ "Former Drinker",
@@ -143,14 +143,14 @@ descriptive.tbl.kbl <- kbl(
     font_size = 7,
     full_width = FALSE
   ) %>%
-  pack_rows("Glycaemic Status (Onset)", 10, 11) %>%
-  pack_rows("Diabetes Status (Progression)", 12, 13) %>%
+  pack_rows("Glycaemic Status", 10, 11) %>%
+  pack_rows("Diabetes Status", 12, 13) %>%
   pack_rows("Gender", 14, 15) %>%
   pack_rows("Race", 16, 21) %>%
   pack_rows("Alcohol Consumption", 22, 25) %>%
   pack_rows("Smoking Status", 26, 28) %>%
   footnote(
-    general = "ALMI: Appendicular Lean Mass Index; HbA1c: Haemoglobin A1c.",
+    general = "ALMI: Appendicular Lean Mass Index; HbA1c: Haemoglobin A1c; MVPA: Moderate to Vigorous Physical Activity",
     symbol = "Continuous variables presented as mean (SD), categorical variables presented as n (%).",
     threeparttable = TRUE, 
     footnote_as_chunk = TRUE
