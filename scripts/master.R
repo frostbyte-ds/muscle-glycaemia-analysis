@@ -54,6 +54,6 @@ message("\n--- ALL SCRIPTS COMPLETED SUCCESSFULLY ---")
 
 # Running the .qmd file to render the thesis
 message(">>> Rendering document...")
-quarto_render("Dissertation.qmd")
+quarto_render("Manuscript.qmd")
 
 message("\n--- RENDER COMPLETE ---")
