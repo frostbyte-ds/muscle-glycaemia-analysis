@@ -230,7 +230,7 @@ for (i in 2:10) {
 
 # Array of covariate changes for summary tables
 covariates <- c("Crude", "+ Demographics", "+ Body Fat Percentage (%)", "+ Waist Circumference (cm)",
-                "+ Poverty Income Ratio", "+ Physical Activity (mins)", "+ Healthy Eating Index", "+ Alcohol Status",
+                "+ Poverty Income Ratio", "+ MVPA (mins/day)", "+ Healthy Eating Index", "+ Alcohol Status",
                 "+ Smoking Status", "+ Average Daily Sleep (hrs)")
 
 # Data frame
@@ -269,7 +269,12 @@ onset.summary.table.kbl <- kbl(
   column_spec(column = 5, width = "5em") %>%
   column_spec(column = 6, width = "5em") %>%
   column_spec(column = 7, width = "5em") %>%
-  column_spec(column = 8, width = "5em")
+  column_spec(column = 8, width = "5em") %>%
+  footnote(
+    general = "MVPA: Moderate to Vigorous Physical Activity",
+    footnote_as_chunk = TRUE
+  )
+
 
 # ----- PROG SUMMARY TABLE ----- #
 
@@ -327,7 +332,11 @@ prog.summary.table.kbl <- kbl(
   column_spec(column = 5, width = "5em") %>%
   column_spec(column = 6, width = "5em") %>%
   column_spec(column = 7, width = "5em") %>%
-  column_spec(column = 8, width = "5em")
+  column_spec(column = 8, width = "5em") %>%
+  footnote(
+    general = "MVPA: Moderate to Vigorous Physical Activity",
+    footnote_as_chunk = TRUE
+  )
 
 # --- Forest plot for visualising final ALMI coefficients --- #
 

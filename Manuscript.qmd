@@ -408,7 +408,7 @@ descriptive.tbl.kbl
 
 Body composition characteristics showed considerable variability, with a mean body fat percentage of 33.5% (SD = 8.7) and a mean waist circumference of 98.7 cm (SD = 17.4). The mean ratio of family income to poverty was 2.9 (SD = 1.7), reflecting a wide spectrum of socio-economic conditions across the sample.
 
-Lifestyle factors also varied substantially. The mean Healthy Eating Index score was 52.6 (SD = 13.5), and the average nightly sleep was 7.2 hours (SD = 1.4). Of particular note, recreational physical activity levels were highly skewed. While the mean was 55 minutes per day, the large standard deviation of 75.1 minutes indicates that many participants reported little to no activity, while a smaller number of highly active individuals significantly influenced the average.
+Lifestyle factors also varied substantially. The mean Healthy Eating Index score was 52.6 (SD = 13.5), and the average nightly sleep was 7.2 hours (SD = 1.4). Of particular note, MVPA levels were highly skewed. While the mean was 164.3 minutes per day, the large standard deviation of 196.5 minutes indicates that many participants reported little to no activity, while a smaller number of highly active individuals significantly influenced the average.
 
 The vast majority of the cohort were classified as moderate drinkers, with this group containing 75.8% of the sample. Only 2.2% of participants were heavy drinkers, 10.6% were former drinkers, and 11.5% had never consumed an alcoholic beverage. The significant number of people in the "Former Drinker" category, namely 1291, highlights the importance of handling the sick-quitter bias. In contrast, the majority of individuals had never smoked cigarettes, with the "Never Smoker" category consisting of 60.6% of the population. 19.3% of people were former smokers, leaving 20.2% as current smokers.
 
@@ -554,9 +554,9 @@ This final subsection of the results will evaluate the findings of the cross-val
 cv_summary_tbl_kbl
 ```
 
-Specifically, the table contains the mean of the mean performance metrics over each of the 10 repeats, as a way to concisely summarise the overall performance of the model. The most important statistic, the mean weighted AUC of 0.844, suggests that the model has high discriminatory power.
+Specifically, the table contains the mean of the mean performance metrics over each of the 10 repeats, as a way to concisely summarise the overall performance of the model. The most important statistic, the mean weighted AUC of 0.845, suggests that the model has high discriminatory power.
 
-The mean optimal threshold of 0.061, although not a measure of model performance, is useful to be aware of. This means that on average, an observation was classified as diabetic if they were predicted a probability of either 0.061 or higher of being so. This threshold provided the optimal balance between sensitivity and specificity, resulting in the respective means of 79.1% and 74.8%. The mean overall weighted accuracy was 75.1%.
+The mean optimal threshold of 0.055, although not a measure of model performance, is useful to be aware of. This means that on average, an observation was classified as diabetic if they were predicted a probability of either 0.055 or higher of being so. This threshold provided the optimal balance between sensitivity and specificity, resulting in the respective means of 81.39% and 72.55%. The mean overall weighted accuracy was 73.07%.
 
 To aid in the interpretation of the results, the ROC curve in @fig-rocPlot provides a visual representation of the model's discriminatory ability.
 
@@ -564,7 +564,7 @@ To aid in the interpretation of the results, the ROC curve in @fig-rocPlot provi
 #| label: fig-rocPlot
 #| out-width: "80%"
 #| fig-align: "center"
-#| fig-cap: "Receiver Operating Characteristic (ROC) curve from the final iteration of the cross-validation for Progression Model 4. The orange diamond highlights the optimal threshold selected by maximising Youden's J statistic. The Area Under the Curve (AUC) of 0.85 indicates high discriminatory power."
+#| fig-cap: "Receiver Operating Characteristic (ROC) curve from the final iteration of the cross-validation for Progression Model 4. The orange diamond highlights the optimal threshold selected by maximising Youden's J statistic. The Area Under the Curve (AUC) of 0.848 indicates high discriminatory power."
 
 roc_plot
 ```
@@ -617,7 +617,7 @@ Importantly, while this calibration issue warrants caution for predictive applic
 
 Other potential limitations include the potential for residual confounding despite the comprehensive adjustments made in the stepwise model building process. There likely exists other confounding variables that if included, may improve the models and make their findings even more robust. Examples of such may include unmeasured factors such as genetics or specific dietary patterns. The inclusion of further variables, or interactions between current ones, may improve the calibration issues seen from the residuals.
 
-Furthermore, many of the included lifestyle variables such as physical activity, alcohol consumption, and smoking habits are based on self-report, which is subject to recall bias. Unfortunately, this is unavoidable when including such variables; however, it is worth acknowledging. Another unavoidable limitation of using survey data is the inconsistency in questionnaire structure across survey cycles. Some of these inconsistencies were effectively addressed, as described in Section \ref{process}; however, some remained. For example, lifetime drinking status in the 2011–2016 cycles was assumed to be defined by whether an individual had consumed at least 12 alcoholic drinks in their lifetime, since no question asked about ever having a single drink, unlike in the 2017–2018 cycle. Additionally, the frequency of alcohol consumption in the 2017–2018 cycle was converted from a categorical to a continuous variable to align with the already continuous measure from the 2011–2016 cycles, which inevitably introduced some error due to the assumptions required.
+Furthermore, many of the included lifestyle variables such as MVPA, alcohol consumption, and smoking habits are based on self-report, which is subject to recall bias. Unfortunately, this is unavoidable when including such variables; however, it is worth acknowledging. Another unavoidable limitation of using survey data is the inconsistency in questionnaire structure across survey cycles. Some of these inconsistencies were effectively addressed, as described in Section \ref{process}; however, some remained. For example, lifetime drinking status in the 2011–2016 cycles was assumed to be defined by whether an individual had consumed at least 12 alcoholic drinks in their lifetime, since no question asked about ever having a single drink, unlike in the 2017–2018 cycle. Additionally, the frequency of alcohol consumption in the 2017–2018 cycle was converted from a categorical to a continuous variable to align with the already continuous measure from the 2011–2016 cycles, which inevitably introduced some error due to the assumptions required.
 
 ## Implications and Future Directions
 
