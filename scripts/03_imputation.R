@@ -27,6 +27,9 @@ bounds_matrix_1118 <- matrix(
   byrow = TRUE
 )
 
+# Setting seed for reproducibility
+set.seed(123)
+
 # Run Amelia
 amelia_out_1118 <- amelia(imputation_vars_1118, m = 30,
                           idvars = c("ID", "PSU", "Strata", "SurvWeight"),
