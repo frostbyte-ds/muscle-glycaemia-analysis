@@ -57,7 +57,7 @@ The data used in this analysis is publicly available from the **National Health 
 
 ## Dependencies
 
-This project requires R and RStudio. All necessary R packages are listed in the `scripts/00_packages.R` script and can be installed by running that file.
+This project requires R and RStudio. All necessary R packages are automatically installed and used as needed upon running the analysis via the `master.R` script.
 
 ## License
 
