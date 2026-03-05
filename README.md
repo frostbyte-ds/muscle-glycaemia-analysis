@@ -25,34 +25,27 @@ The analysis uses data from four cycles of the National Health and Nutrition Exa
 To reproduce the analysis, please follow these steps:
 
 1.  **Clone the Repository:** Clone this repository to your local machine.
-2.  **Open the Project:** Open the `Dissertation.Rproj` file in RStudio. This will automatically set the correct working directory.
-3.  **Install Dependencies:** Run the `00_packages.R` script to install and load all the required R packages.
-4.  **Run the Analysis:** Execute the scripts in their numbered order. You can either run them one by one or use a master script to source them all. The scripts will:
-    -   Load and clean the raw NHANES data (`01_load_data.R`).
-    -   Create the final analytical variables, including harmonising confounders across survey cycles (`02_variable_creation.R`).
-    -   Perform multiple imputation to handle missing data (`03_imputation.R`).
-    -   Conduct exploratory data analysis (`04_eda.R`).
-    -   Fit the final logistic regression models (`05_modelling.R`).
-    -   Run model diagnostics (`06_diagnostics.R`).
-    -   Generate summary tables (`07_summaries.R`).
-    -   Generate and plot predictions (`08_prediction.R`).
-    -   Perform cross-validation (`09_crossvalidation.R`).
-    -   Save all of the final figures and tables for the report (`10_saving_assets`).
-5.  **Render the Dissertation:** Open `Dissertation.qmd` and click "Render" to generate the final PDF document of the dissertation, which embeds the results from the analysis.
+2.  **Open the Project:** Open the `muscle-glycaemia-analysis.Rproj` file in RStudio. This will automatically set the correct working directory.
+3.  **Execute the Scripts:** Open and execute the `master.R` script. This will run all scripts required for the analysis (00-10) and render the manuscript as a PDF file.
 
 ------------------------------------------------------------------------
 
 ## Repository Structure
 
--   `Dissertation.Rproj`: The RStudio project file. Open this to get started.
--   `Dissertation.qmd`: The Quarto source file for the final dissertation write-up.
--   `Dissertation.pdf`: The final thesis.
+-   `muscle-glycaemia-analysis.Rproj`: The RStudio project file. Open this to get started.
+-   `Manuscript.qmd`: The Quarto source file for the final write-up.
+-   `MSc Thesis.pdf`: The final thesis as submitted for my MSc.
 -   `README.md`: This file, explaining the project.
 -   `References.bib`: The bibliography file for all citations.
 -   `.gitignore`: Specifies which files and folders to exclude from version control.
 -   `scripts/`: A folder containing all the R scripts for the analysis, numbered in the order they should be run.
 -   `template/`: A folder containing LaTeX files needed for the custom title page when rendering the Quarto document.
+-   `renv/`: A folder containing the local R library and environment files managed by the renv package, ensuring reproducibility.
+-   `.Rprofile`: A configuration file that runs automatically when the R project is opened (used here to initialise the renv environment).
+-   `renv.lock`: A lockfile that records the exact versions of all R packages used in this project to guarantee absolute reproducibility.
+-   `acm.csl`: A Citation Style Language (CSL) file that defines the formatting style for the bibliography (Association for Computing Machinery style).
 -   `Uni-Exeter-logo-portrait-1.png`: The University of Exeter logo, also needed for the custom title page.
+-   `onset10resids.png`, `onsetVarResids.png`, `prog4resids.png`, `progVarResids.png`: Residual plots included as figures in the final manuscript.
 
 ------------------------------------------------------------------------
 
