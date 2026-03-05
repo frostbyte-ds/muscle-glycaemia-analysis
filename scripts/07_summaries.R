@@ -374,7 +374,7 @@ almi_forest_plot <- ggplot(plot_data_forest, aes(x = or, y = Model)) +
   geom_point(size = 4, shape = 18, color = "darkblue") +
   
   # Add the lines for the 95% Confidence Intervals
-  geom_errorbarh(aes(xmin = lower_ci, xmax = upper_ci), height = 0.2, linewidth = 1, color = "darkblue") +
+  geom_errorbar(orientation = "y", aes(xmin = lower_ci, xmax = upper_ci), width = 0.2, linewidth = 1, color = "darkblue") +
   
   # Add a vertical line at OR = 1.0 for reference (no effect)
   geom_vline(xintercept = 1, linetype = "dashed", color = "red", linewidth = 1) +
