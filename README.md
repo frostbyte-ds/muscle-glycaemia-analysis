@@ -37,6 +37,7 @@ To reproduce the analysis, please follow these steps:
 -   `MSc Thesis.pdf`: The final thesis as submitted for my MSc.
 -   `README.md`: This file, explaining the project.
 -   `References.bib`: The bibliography file for all citations.
+-   `LICENSE.md` & `LICENSE_TEXT.md`: Outlines the licensing terms and usage rights for the code and manuscript in this repository.
 -   `.gitignore`: Specifies which files and folders to exclude from version control.
 -   `scripts/`: A folder containing all the R scripts for the analysis, numbered in the order they should be run.
 -   `template/`: A folder containing LaTeX files needed for the custom title page when rendering the Quarto document.
