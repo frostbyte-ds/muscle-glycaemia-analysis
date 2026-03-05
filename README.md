@@ -35,6 +35,7 @@ To reproduce the analysis, please follow these steps:
 -   `muscle-glycaemia-analysis.Rproj`: The RStudio project file. Open this to get started.
 -   `Manuscript.qmd`: The Quarto source file for the final write-up.
 -   `MSc Thesis.pdf`: The final thesis as submitted for my MSc.
+-   `Manuscript.pdf`: The current working manuscript, reproduced by rendering `Manuscript.qmd`.
 -   `README.md`: This file, explaining the project.
 -   `References.bib`: The bibliography file for all citations.
 -   `LICENSE.md` & `LICENSE_TEXT.md`: Outlines the licensing terms and usage rights for the code and manuscript in this repository.
