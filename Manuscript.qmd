@@ -61,242 +61,43 @@ In conclusion, the independent protective association of skeletal muscle with di
 
 Epidemiological data indicate a rising prevalence of both type 1 and type 2 diabetes mellitus in recent years. The World Health Organisation states that the number of individuals affected by diabetes rose by 315% from 1990 to 2022 @who_2024. This is a significant public health concern as diabetes is recognised as a leading cause of morbidity and mortality on a global scale @diabetes_world_2023. Prediabetes, an intermediate metabolic state characterised by elevated blood glucose levels below the diagnostic threshold for type 2 diabetes but associated with a substantially increased risk of progression, is also rising in global prevalence. Projections indicate that by 2030, more than 470 million individuals will be classified as prediabetic @prediabetes2_2012. Of these, an estimated 5–10% are expected to progress to type 2 diabetes annually, suggesting that between 23.5 and 47 million or more individuals may develop diabetes by 2030. Understanding the key, modifiable risk factors for these conditions is essential for developing effective prevention strategies.
 
-One of the most commonly known risk factors for diabetes is obesity @fat_2022. Obesity is characterised by excessive body fat and is frequently identified using measurements such as Body Mass Index (BMI). However, simple metrics such as BMI are often insufficient as they do not distinguish between fat and muscle mass and do not describe the distribution of fat in the body. This is a concern as a more accurate understanding of metabolic risk requires a focus on the interplay between different aspects of body composition such as adiposity and muscle. The distribution of fat is also important, with studies showing that visceral fat, in particular, has a distinct association with diabetes risk compared with overall adiposity @fat_2022.
+One of the most commonly known risk factors for diabetes is obesity @fat_2022, frequently identified using measurements such as Body Mass Index (BMI). However, simple metrics such as BMI are often insufficient as they do not distinguish between fat and muscle mass and do not describe the distribution of fat in the body. This is a concern as a more accurate understanding of metabolic risk requires a focus on the interplay between different aspects of body composition such as adiposity and muscle. The distribution of fat is also important, with studies showing that visceral fat, in particular, has a distinct association with diabetes risk compared with overall adiposity @fat_2022.
 
 A specific type of muscle mass has been shown to be protective against the prevalence of diabetes - skeletal muscle @inverse_2011. Skeletal muscle is not simply a tissue used for movement, but is also the body's largest metabolic organ @largest_organ_2013. Physiologically, it is the primary site for postprandial glucose disposal, acting as a metabolic sink and accounting for approximately over 80% of post-meal glucose uptake from the blood @merz_thurmond_2020. Consequently, insulin sensitivity within skeletal muscle is a key determinant of whole-body glucose homeostasis. When this process is impaired, it becomes a primary driver of whole-body insulin resistance.
 
-Given its central role, further investigating the protective effect of skeletal muscle in the context of diabetes is of high clinical importance. This research moves beyond asking *if* skeletal muscle is associated with protection and instead considers *when* this association is most pronounced. By modelling two distinct clinical thresholds, this study seeks to provide novel evidence that the independent metabolic benefit of skeletal muscle is diabetes stage-specific - that its association with glycaemic control is not uniform over the full glycaemic spectrum.
+Given its central role, further investigating the protective effect of skeletal muscle in the context of diabetes is of high clinical importance. This research moves beyond asking *if* skeletal muscle is associated with protection and instead considers *when* this association is most pronounced. By modelling two distinct clinical thresholds, this study explores whether the independent metabolic benefit of skeletal muscle is diabetes stage-specific - that its association with glycaemic control is not uniform over the full glycaemic spectrum.
 
 While the individual roles of adiposity and muscle in glycaemic control across the full range of glycaemia are widely documented, their complex interplay - and particularly the independent stage-specific role of muscle in the face of powerful confounding from fat - is less clear. Understanding these mechanisms will likely lead to clinically relevant knowledge relating to the prevention and treatment of diabetes.
 
 Despite the physiological role of skeletal muscle suggesting a protective association with glycaemic control, there are inconsistencies in the surrounding literature. While several studies have reported that greater muscle mass is linked to a reduced risk of diabetes, others have found no significant association @inverse_2011 @muscle_null_2019. Interestingly, one study even observed that higher levels of lean mass (which includes skeletal muscle) were positively associated with diabetes risk @muscle_bad_2020. These conflicting results may be due to differences in statistical adjustment, particularly a failure to adequately control for the powerful confounding effects of central adiposity, or from modelling the association across the entire glycaemic spectrum as a single, uniform relationship, rather than investigating potential stage-specific differences.
 
-Therefore, this dissertation sought to clarify these discrepancies by examining the independent and stage-specific associations of skeletal muscle with glycaemic regulation. Do these associations remain consistent across the entire glycaemic spectrum, or do they vary by stage? The analysis was based on the hypothesis that, given the established physiological role of muscle in glucose disposal, higher muscle mass would be associated with lower blood glucose levels at all stages.
-
-The structure of this dissertation is as follows: Chapter 3 will detail each stage of the methodology that underpinned the analysis, spanning from outlining fundamental aspects of the data source and variable selection to comprehensive diagnostics of the final statistical models. Next, Chapter 4 will present the results, starting with concise summaries of the final analytical sample and progressing to the key findings that answer the research question. Chapter 5 contains key discussions of the interpretations and implications of the results, also outlining the strengths and limitations of the analysis and suggesting avenues for future research. Finally, Chapter 6 will neatly summarise the complete analysis, stating its contributions to the fields of metabolic epidemiology and data science in health research.
+Therefore, we sought to clarify these discrepancies by examining the independent and stage-specific associations of skeletal muscle with glycaemic regulation. Do these associations remain consistent across the entire glycaemic spectrum, or do they vary by stage? The analysis was based on the hypothesis that, given the established physiological role of muscle in glucose disposal, higher muscle mass would be associated with lower blood glucose levels at all stages.
 
 # Methodology {#methodology}
 
-The analytical methods used to investigate the associations of skeletal muscle with glycaemic control involved many sequential stages. The first task was the loading of data from the National Health and Nutrition Examination Survey (NHANES) @nhanes_2024. Following data loading, meticulous creation and harmonisation of various predictor, outcome, and confounding variables was key. Missing data was appropriately handled using a robust multiple imputation strategy, after which, an iterative modelling journey was conducted to identify the most appropriate statistical models for the goal.
+The data is from the National Health and Nutrition Examination Survey (NHANES) @nhanes_2024. Data from the following cycles have been utilised in this analysis: 2011-12, 2013-14, 2015-16, and 2017-18 representing XXXXX participants. As per the NHANES analytic guidelines, the Mobile Examination Centre exam weight was used for all analyses @nhanes_design_2018. Data on glycated haemoglobin (HbA1c), appendicular lean mass (ALM XXXX units XXXXX) ,weight (kg), age (years), gender (male/female), race (XXXXwhat categories XXXXX), body fat percentage (BFP) and waist circumference (WC) , ratio of family income to poverty (PIR), moderate and vigorous work-related and recreational activity in a typical day (MVPA), alcohol status (never drinkers, former drinkers, moderate drinkers, and heavy drinkers), smoking status ("Never Smoker", "Former Smoker", and "Current Smoker") and average daily hours of sleep (hours) XXXXXetc XXXXX were all used in this analysis. Two separate binary classifications of HbA1c were created: \> 5.7% / \<= 5.7% (representing not pre-diabetes/pre-diabetes) and \> 6.5%/ \<= 6.5% (representing no diabetes/diabetes).
 
-The chosen models were thoroughly diagnosed to ensure they were well-selected and that inferences made using them were accurate. Once the models were known to be well-defined, their coefficients were extracted and examined, they were used to make predictions, and their predictive accuracy was assessed using unseen data.
+Manipulation and harmonisation of the NHANES waves was done using the `nhanesA` package in R.
 
-The following sections will describe each stage of the methodological journey in detail, aiming to instil confidence in, and understanding of, the analysis and findings.
+An index was created by normalising ALM by squared height (AMLI).
 
-## Data Source: The National Health and Nutrition Examination Survey (NHANES)
+A Healthy Eating Index (HEI) (range 0-100) was created from NHANES dietary questions using the R package `heiscore` @usda_2023.
 
-The data used for all analyses are from the National Health and Nutrition Examination Survey (NHANES). NHANES is a large-scale health and nutrition examination program conducted by the National Center for Health Statistics - a subsidiary of the CDC.
+Alcohol status required harmionising different alcohol questions from 2011-2016 and 2017-2018 (XXXXX details at the GitHub XXXXX).
 
-The program began in 1959 under a different name - The National Health Examination Survey @nhanes_doc_2021. It was founded to satisfy the National Health Survey Act of 1956, which authorised ongoing surveys “to secure accurate and current statistical information on the amount, distribution, and effects of illness and disability in the United States”.
+Missing data was handled using a robust multiple imputation strategy (n=30), after which, an iterative modelling journey was conducted to identify the most appropriate statistical models for the goal.
 
-The overarching goals of NHANES are to deliver reliable data on the prevalence of major health conditions and their risk factors, monitor changes over time in diseases, behaviours, and environmental exposures, identify new and emerging public health issues, and preserve a nationally representative snapshot of the population’s health and nutritional well-being @nhanes_doc_2021.
+Values above a threshold of 960 minutes for MVPA were assumed to be missing and set to `NA` to be imputed. The choice of this specific threshold was informed by the UK Biobank @uk_biobank_2005.
 
-The manner in which NHANES collects data is from a combination of personal interviews and questionnaires, standardised health examinations, and laboratory tests. Data such as demographics, socio-economic status, and health behaviours such as smoking history, alcohol consumption, and physical activity were recorded through interviews. Examinations, all performed in Mobile Examination Centres (MECs), were responsible for recording anthropometric and body composition data using dual-energy X-ray absorptiometry (DXA) - the source of the primary muscle mass predictor. Laboratory tests involved the collection of biological specimens such as blood and urine. This was the source of the primary glycaemic control outcome variable.
+XXXX
 
-Approximately 5,000 people take part in NHANES each year, with the data becoming available to the public in biannual cycles. Data from the following cycles have been utilised in this analysis: 2011-12, 2013-14, 2015-16, and 2017-18.
-
-The format of interview questionnaires in NHANES often changes across cycles, causing certain questions to differ in wording or structure. For this reason, a high level of care had to be taken when merging data from each cycle to create the final comprehensive dataset. Techniques such as variable harmonisation and feature engineering were critical to ensure the quality of data was upheld and only meaningful predictors were included in the models. Details of this process can be seen in Section \ref{process}.
-
-Crucial elements of NHANES that needed to be considered were its cross-sectional nature and complex, multi-stage probability sampling design @nhanes_design_2018. NHANES is a cross-sectional study, meaning that data from each participant is collected only once at a specific point in time. As a result, analysis of associations between variables is permitted, but inferences of causality are not valid. In addition to its cross-sectional design, accounting for the complex sampling structure enabled appropriate variance estimation, ensuring that the statistics represent the entire U.S. civilian non-institutionalised population. The key features of the NHANES design are as follows:
-
-1.  **Strata:** These are groups of Primary Sampling Units (PSUs) that are similar in terms of geography and demographic characteristics, often defined using state-level health indices. Stratification increases the precision of the final estimates.
-2.  **Primary Sampling Units (PSUs):** These are the clusters, typically counties or groups of counties, sampled within each stratum. PSUs are selected with probabilities proportionate to their size to ensure that subgroups of public health interest are adequately represented. Accounting for clustering is essential for calculating correct standard errors, as individuals within a cluster may be more similar to each other than to the general population.
-3.  **Sample Weights:** Each participant is assigned a sample weight that can be thought of as counts of the number of individuals that they represent. A participant's sample weight accounts for their unequal probability of selection (due to oversampling of certain subgroups), as well as adjustments for non-response to the interview and the Mobile Examination Center (MEC) exam (more on this later).
-
-As per the NHANES analytic guidelines, the MEC exam weight was used for all analyses @nhanes_design_2018. These are the weights that were used for "the least common denominator", meaning the "variable of interest that was collected on the smallest number of respondents". The primary outcome and predictor variables were collected during the physical examination at the MEC. The subset of individuals that participated in the MEC exam was smaller than the group that were interviewed, making the MEC weights the appropriate choice.
-
-All statistical modelling was carried out using the `survey` package in R. This package provides functions that enable a variety of modelling techniques to be used in conjunction with "multi-stage stratified, cluster-sampled, unequally weighted survey samples" @lumley_2023.
-
-All NHANES data are publicly available on the NCHS website and have been de-identified to maintain the anonymity of the participants. The data can be found alongside comprehensive documentation, including detailed codebooks, survey procedure manuals, and analytical guidelines, the use of which was paramount in ensuring the results of this study were statistically valid.
-
-## Variable Selection and Creation {#vars}
-
-As previously mentioned, a thorough process of variable selection, creation, and harmonisation across survey cycles was key in this analysis. Scientifically appropriate outcome, predictor, and confounding variables were chosen to successfully isolate the independent role of muscle mass in glycaemic control.
-
-### Outcome variable: Glycaemic Control {#outcome}
-
-The outcome variable chosen to represent glycaemic control was glycated haemoglobin (HbA1c) @diabetes_uk_2017.
-
-Although the classification of diabetes has historically relied on single-point measures such as fasting plasma glucose (FPG), clinical guidelines have evolved. HbA1c is now commonly recommended as it provides a more stable and comprehensive assessment by measuring average blood glucose levels over the last 2-3 months @iec_2009.
-
-There are many advantages of using HbA1c over single-point measures such as FPG, some of which are as follows:
-
--   FPG levels are subject to a high degree of day-to-day variability due to a variety of factors including acute stress, illness, or changes in exercise @iec_2009. Such variability is not a concern with HbA1c, making it a more stable and reliable biomarker.
-
--   HbA1c can be comparable to roughly thousands of individual measurements of FPG, also capturing postprandial spikes in glucose that are often missed by a simple fasting test, but are significant contributors to overall glycaemic burden @hb_pros_2011.
-
--   No fasting is required for retrieving HbA1c measurements, allowing for substantially simpler data collection for large-scale surveys such as NHANES. This also reduces the burden on participants and eliminates the chance of misclassification due to patients not adhering to fasting protocols.
-
-HbA1c measurement has been standardised worldwide through efforts like the National Glycohemoglobin Standardization Program (NGSP), allowing results from various labs and studies to be comparable (<https://ngsp.org/>).
-
-To test the hypothesis that the association of skeletal muscle with glycaemic control is stage-specific, the continuous HbA1c variable was dichotomised to create two distinct binary outcomes. This approach allows for the separate modelling of the factors associated with the initial onset of dysregulation versus the progression to clinical disease.
-
-The first outcome, representing the "Onset" of elevated risk, was defined using the American Diabetes Association (ADA) threshold for prediabetes @ada_2023. Individuals with HbA1c $<$ 5.7% were classified as "normal", while those with values $\geq$ 5.7% were classified as "elevated".
-
-The second outcome, representing the "Progression" to diabetes, was defined using the ADA's diagnostic threshold of 6.5% HbA1c. This separated individuals below the diabetic threshold ($<$ 6.5%) from those with clinical diabetes ($\geq$ 6.5%).
-
-This dual-outcome strategy directly informs the use of two separate binary classification models in the subsequent analysis, allowing for a nuanced investigation of the stage-specific associations. See Section \ref{imp} for details of how this was coded.
-
-### Primary Predictor Variable: Skeletal Muscle Mass
-
-The metric used as the primary predictor and a proxy for skeletal muscle in this study is the appendicular lean mass index (ALMI). This refers to appendicular lean mass (ALM) - muscle mass in the limbs - scaled by height squared. Choosing to only consider muscle in the limbs is key as it allows for greater specificity for skeletal muscle tissue @tinsley_heymsfield_2024. Including whole body lean mass would introduce muscle in the central organs such as the heart, lungs, and liver. This would result in an inflated measure of skeletal muscle that is not representative of the muscle relevant to glucose uptake or metabolism.
-
-To account for inherent differences in body size, ALM is normalised by height squared to create ALMI. This normalisation is crucial as a taller individual will naturally possess greater appendicular lean mass than a shorter individual, even with a similar physique. Indexing to height squared - a method analogous to the calculation of BMI - allows for valid and meaningful comparisons of muscle mass between individuals of different statures @scaling_2021.
-
-ALMI is the international standard measurement used for diagnosing sarcopenia, demonstrating its trusted clinical usage @sarco_2022.
-
-ALMI is not directly reported by NHANES; however, the required data are available, including DXA lean mass measurements (excluding bone mass) for each limb and height measurements. After converting lean mass from grams to kilograms and height from centimetres to metres, these variables were combined as follows to calculate ALMI:
-
-\begin{center}
-
-$\text{ALMI} \,(\mathrm{kg}/\mathrm{m}^2) = (\text{Left leg lean mass} \,(\mathrm{kg}) + \text{Right leg lean mass} \,(\mathrm{kg}) + \text{Left arm lean mass} \,(\mathrm{kg}) + \text{Right arm lean mass} \,(\mathrm{kg})) \,/ \,\text{Height}^2 \,(\mathrm{m})$
-
-\end{center}
-
-This conversion was done after multiple imputation of the appropriate variables in each imputed dataset (see Section \ref{imp}). Doing this prior to imputation would not have been optimal. The multiple imputation algorithm works best when it has the largest amount of information to learn from. Prematurely combining the lean mass measurements of all four limbs into ALMI would reduce the information that the imputation is able to learn from, likely reducing its accuracy. In addition, calculating ALMI before imputation would result in the loss of observations in the dataset. This would be due to a missing value in any of the four limb measurements, or height, resulting in `NA` when combined. Forming the ALMI variable after the imputation algorithm is key in maintaining the highest possible accuracy and size of the final dataset.
-
-### Selection of Simple Confounding Variables {#simple}
-
-To isolate the independent effect of skeletal muscle on glycaemic control, it is essential to control for potential confounding variables. Failure to do so can lead to biased estimates and spurious correlations. Confounding variables are those that are associated with both the outcome and primary predictor, but are not on the causal pathway between them @confounding_2008.
-
-Choosing what confounding variables to include in the models was done based on the backing of the surrounding literature. Some confounders were simple to obtain and required no extensive harmonisation. These variables, and the reasons for including them, are outlined in this section. See Section \ref{process} for details on the inclusion of those variables that required substantial pre-processing.
-
-Key demographic confounders included in the analysis are age, gender, and race. Age is inversely related to muscle mass, which typically peaks in young adulthood and naturally declines thereafter - a process known as sarcopenia @demo_muscle_2010. Body composition, including skeletal muscle, also differs between males and females, and these differences extend across different ethnic backgrounds.
-
-Furthermore, increasing age is strongly associated with worsening glycaemic control due to insulin sensitivity decreasing with age @demo_gluc_2005. Sex hormones have been shown to have a strong influence on insulin sensitivity, resulting in differing risk profiles for metabolic disease between men and women, with women appearing to have lower insulin resistance than men @geer_shen_2009. Finally, there is a highly documented disparity in the prevalence of type 2 diabetes between those of differing ethnicities @demo_gluc_2005.
-
-These reasons provide strong justification for the inclusion of age, gender, and race as confounding variables in the statistical models. Each variable is readily available in each cycle of NHANES and was directly extracted to be included in the final analytical sample.
-
-To comprehensively account for the confounding effects of adiposity, key body composition variables - body fat percentage (BFP) and waist circumference (WC) - were included in the models. As demonstrated by research directly comparing these metrics, both are significant predictors of type 2 diabetes, with central adiposity often showing a particularly strong association with the incidence of the disease @associations_2019. Therefore, including both is essential to fully disentangle their effects from the independent contribution of muscle mass. Furthermore, adiposity is inversely associated with muscle mass, and failure to account for this relationship can confound the effects of muscle mass on health outcomes. For example, even those with BMI in the normal ranges, individuals that have low muscle mass may have higher body fat percentages and increased mortality risks @musc_adipos_2018.
-
-Another confounding variable that was considered in the analysis was diet quality due to it being a primary determinant of glycaemic control and having strong association with skeletal muscle mass in the body @diet_gluc_2020 @diet_muscle_2023. NHANES collects substantial data regarding diet in the form of "24-hour dietary recalls" @dietary_recall. Since the 2002–2003 survey cycle, each participant has completed two 24-hour dietary recalls, the second occurring 3 to 10 days after the first. Each recall collected detailed information on foods consumed and total nutrient intakes.
-
-There is no easy way to manually leverage the complex NHANES dietary recall data to engineer a single variable to include in the models, therefore, the R package `heiscore` was used to seamlessly extract what is known as Healthy Eating Index (HEI) scores for each participant of the required NHANES survey cycles. The HEI is a tool used to evaluate diet quality by measuring how closely a group of foods adhere to the core recommendations and dietary patterns outlined in the Dietary Guidelines for Americans @usda_2023. A HEI score is a number from 1 to 100, with numbers closer to 100 indicating a healthier diet.
-
-The final simple confounding variable that was been included in the statistical models was the ratio of family income to poverty (PIR), which is used as a measure of socio-economic status (SES). SES is a well-established social determinant of health, strongly associated with health behaviours, access to healthcare, and the risk of developing type 2 diabetes @ses_gluc_2024 @ses_muscle_2020. It is a multifaceted construct that is frequently utilised in epidemiological research through indicators such as educational attainment and occupational status @pir_2014. These indicators may be problematic by attaching excessive significance to education and employment, while failing to acknowledge access to, and affordability of healthcare.
-
-This concern is rectified by the use of PIR, which represents household income relative to the appropriate poverty line. The poverty line or threshold is the minimum income level deemed necessary for a family to meet basic needs like food, housing, and clothing, and family income is defined as the total income of all members of a given household or family. A PIR of 1 means the family's income is equal to their poverty threshold, less than one implies they are economically disadvantaged, and greater than one implies they are financially secure, with higher magnitudes of PIR indicating further distance from the poverty line.
-
-### Data Processing and Harmonisation of Lifestyle Confounders {#process}
-
-Section \ref{simple} outlined the selection of the confounding variables that did not require significant adjustment to be compiled in the final dataset. As previously mentioned, some confounders did require extensive data processing due to reasons such as structural missingness as a result of survey skip patterns and changes to interview structure over different survey cycles.
-
-This section will provide justification for why these remaining confounders were chosen, and it will detail the meticulous wrangling that was needed to form the final comprehensive dataset prior to multiple imputation, including the harmonisation of these more complex confounders over each survey cycle of NHANES, and the techniques used to handle structural missingness. All the required R code for these tasks can be seen in Section \ref{procCode}.
-
-#### Combining NHANES Survey Cycles
-
-The initial task was to combine each relevant dataset from each cycle of NHANES from 2011 to 2018, keeping only the variables required for the analysis. These were each of the aforementioned variables in Section \ref{vars}, an individual ID, and the variables that were needed to engineer lifestyle confounders of physical activity, alcohol consumption, cigarette smoking, and daily hours of sleep. The details of such feature engineering will be outlined later in this section.
-
-Each required dataset within NHANES was obtained using the `nhanesA` package in R. This package provides a simple function `nhanes` which was used to load the relevant data from each survey cycle into R. This process can be seen in Section \ref{nhanes}, along with the use of the `score` function from the aforementioned `heiscore` package to obtain the HEI scores for each participant.
-
-Inner join was used, with the ID variable as the key, to combine each dataset within each survey cycle using a custom function `multi_inner_join`. This function took a list of data frames as an input and returned the result of combining them with inner join. The use of inner join was crucial in creating a valid analytical sample prior to imputation. Not all individuals who participated in the interview stage also took part in the examination phase, and vice versa. Merging datasets with an inner join ensures that only participants who completed both the interview and examination stages are included in the final dataset. Without this step, data not missing at random would need to be imputed, leading to a substantially larger but severely biased dataset. Each survey cycle's combined data frame was given a new identifier column to label which survey cycle its observations were from. This variable was key in the variable harmonisation phase.
-
-Next, the complete merged datasets for each survey cycle were simplified by removing every variable within them that was not required. Following this, a new large dataset was formed by binding each survey cycle's dataset by row. This dataset contained 12,178 rows, comprising of all participants that took part in both the interview and examination phases in one of any NHANES survey from 2011 to 2018. Due to the cross-sectional nature of NHANES, no individual took part in multiple survey cycles.
-
-#### Physical Activity
-
-Following the creation of this large dataset was the handling of structural missingness and harmonisation of lifestyle confounders, the first of which being physical activity, which is well known to be strongly associated with skeletal muscle mass and glycaemic control @phys_gluc_2018 @phys_musc_2023. The physical activity variable used for modelling combined total minutes of "moderate" and "vigorous" work-related and recreational activity in a typical day (MVPA). Definitions of these activity levels are provided in the NHANES physical activity questionnaire codebooks (2017-18 @paq_2017).
-
-The logic of the physical activity questionnaires in NHANES was vital to consider when forming a final physical activity variable to be used for statistical modelling. Before each participant was asked to report the number of minutes of each type of physical activity of either intensity they undertake in a typical day, they were first asked if they engage in any at all for at least 10 minutes continuously in a typical week. These responses were stored in the following variables for moderate/vigorous activity during work or recreationally, respectively: `PAQ665/PAQ650` and `PAQ620/PAQ605`. If the participant gave the answer "Yes", they were also asked how many minutes of the appropriate level of activity they carry out in a typical day - `PAD675/PAD660` for moderate/vigorous recreational activity and equally `PAD630/PAD615` for work-related activity.
-
-This structure introduces structural missingness. Any time a participant answered "No" to the initial gatekeeper question, they were not asked the follow up question, resulting in the skipped response being coded as `NA` in the data. Of course, this data is not "missing". An initial answer of "No" should correspond to 0 minutes of the appropriate level of physical activity in a typical day. This issue was resolved by recoding the variables as needed (see Section \ref{procCode}). Very few individuals also responded with "Don't know" when asked the follow-up question regarding minutes of activity. This was coded as 9999 in the dataset and was handled by setting 9999 values to `NA` so that they could be imputed. Handling the outlined structural missingness resulted in the proportion of missing data for `PAD675`, `PAD660`, `PAD630`, and `PAD615` reducing from 56%, 69%, 60%, and 77%, respectively, to 0.09%, 0.04%, 0.3%, and 0.2%, emphasising the importance of this data processing. The final physical activity variable was formed by summing `PAD675`, `PAD660`, `PAD630`, and `PAD615`.
-
-Some values of this final physical activity variable were implausibly high. It is not possible to discern why this was the case, but a likely estimate would be due to questions being misunderstood by participants. It was made clear in the questions of the physical activity questionnaires to exclude activity included in the answers of previous questions. This instruction may have not been followed, potentially leading to cases of extreme combined activity values.
-
-Values above a threshold of 960 minutes were assumed to be missing and set to `NA` to be imputed. The choice of this specific threshold was informed by the UK Biobank @uk_biobank_2005.
-
-#### Alcohol Consumption
-
-The next lifestyle confounder to be included was alcohol consumption due to prior evidence showing that alcohol affects both muscle composition and glycaemic regulation @alc_musc_2001 @alc_gluc_2004. The alcohol consumption questionnaire from the NHANES interview stage maintained the same structure for the relevant questions from 2011 to 2016, but underwent alterations for the 2017-2018 cycle. This necessitated a complex multi-stage harmonisation process that resulted in a single, robust 4-level categorical variable (`Alcohol_Status`) distinguishing never drinkers, former drinkers, moderate drinkers, and heavy drinkers. Thresholds outlined by the U.S. government's "Dietary Guidelines for Americans" were used to classify drinkers as "moderate" or "heavy" @alcohol_2024.
-
-Differentiating those who have never consumed alcohol and those who are former drinkers is key in handling the "sick-quitter" effect. The sick-quitter effect refers to individuals who stop drinking alcohol because of health problems @sick_quitter_2024. Although they are often categorised as non-drinkers in health data, they may have already experienced alcohol-related harm before quitting. When studies compare drinkers to non-drinkers and the non-drinker group includes former drinkers with existing health issues, it can distort the results. This may make the risks of alcohol seem lower than they are, or even suggest that light drinking offers health benefits. The construction of the `Alcohol_Status` variable handles this appropriately, substantially improving the quality of the final variable and more effectively controlling for the confounding effects of alcohol.
-
-A categorical approach offers key advantages over using a continuous variable of alcoholic drink consumption. The sick-quitter effect would be ignored using a continuous approach, resulting in both "Never Drinkers" and "Former Drinkers" being coded as 0, and it captures non-linear risk, which avoids the invalid assumption of a linear dose-response relationship.
-
-The harmonisation process involved the following steps:
-
-1.  Harmonisation of Drinking Frequency:
-
-    This stage involved creating a consistent measure of how often participants drank alcohol. For the 2011-2016 cycles, this was recorded as a numerical variable directly measuring the number of drinking days in the last year (`ALQ120Q`). However, for the 2017-2018 cycle, this was replaced with a categorical variable (`ALQ121`). To create a single, continuous variable that was comparable across all cycles (`Drinking_Days_Per_Year)`, the categorical `ALQ121` was converted into an approximate number of days per year (e.g., "Every day" was converted to 365, "Once a week" to 52, etc.). The new `Drinking_Days_Per_Year` variable was simply the same as `ALQ120Q` for the responses from 2011-2016. Codes for "Refused" and "Don't know" responses were assigned to `NA` across all cycles to be imputed.
-
-2.  Cleaning of Drinking Quantity
-
-    The variable for the quantity of drinks per drinking day (`ALQ130`) was cleaned to handle "Refused" and "Don't know" codes in the same way as in Step 1. In the original data, values of `ALQ130` were coded as `NA` for those whose answers to `ALQ120Q` or `ALQ121` were 0 or "Never in the last year" respectively. Of course, this was not true missing data, but rather should be coded as 0. This was fixed by assigning a new clean `ALQ130` variable that was 0 whenever `Drinking_Days_Per_Year` was 0.
-
-3.  Calculation of Average Daily Intake
-
-    The harmonised frequency and cleaned quantity variables were then used to calculate a final, continuous variable denoted by `AvgDailyDrinks` that measured the average number of daily alcoholic drinks consumed by each participant over the year prior to their survey cycle.
-
-4.  Harmonisation of Lifetime Drinking Status
-
-    This step involved creating a consistent flag to identify lifelong abstainers, enabling clear distinction between "never drinkers" and "former drinkers". The relevant questions differed by cycle: `ALQ110` (2011–2016) asked whether participants had consumed at least 12 alcoholic drinks in their lifetime, while `ALQ111` (2017–2018) simply asked if they had ever consumed an alcoholic drink. Additionally, before answering `ALQ110`, participants in 2011–2016 were first asked whether they had consumed at least 12 drinks in the past year. A "Yes" response skipped `ALQ110`, leaving it coded as `NA` when the correct value should have been "Yes". This structural missingness was addressed appropriately, and "Refused" and "Don't Know" responses were recoded to `NA` for later imputation. Finally, a harmonised variable (LifetimeDrinkerFlag) was created using the cleaned ALQ110 for 2011–2016 and ALQ111 for 2017–2018. The distinction between having at least 12 drinks versus a single drink in a lifetime could not be preserved and was treated as equivalent.
-
-5.  Final Variable Correction and Selection
-
-    Due to survey skip patterns, there were instances where `AvgDailyDrinks` was coded as `NA` where `LifetimeDrinkerFlag` was "Never". This was simple to resolve by setting `AvgDailyDrinks` to 0 in each of these cases. Following this, the `LifetimeDrinkerFlag` variable was converted to a factor with the levels "Never" and "Ever", and the relevant final columns of the dataset were selected, allowing `AvgDailyDrinks` and `LifetimeDrinkerFlag` to be passed into the multiple imputation algorithm.
-
-6.  Post Imputation Variable Creation
-
-    Finally, after multiple imputation, `AvgDailyDrinks` and `LifetimeDrinkerFlag` were used to create the final 4-level `Alcohol_Status` variable. This process can be seen in Section \ref{imp}.
-
-#### Smoking Status
-
-Smoking cigarettes has been shown to negatively impact both muscle mass and blood sugar levels @smoke_musc_2020 @smoke_gluc_2013. For this reason, there was strong justification to include smoking status as a confounding variable in the statistical models for this analysis.
-
-The goal was to create a clean categorical `Smoking_Status` variable using the results of two key questions in the smoking interview from NHANES, namely `SMQ020` ("Have you smoked at least 100 cigarettes in your life?") and `SMQ040` ("Do you now smoke cigarettes?"). This allowed for `Smoking_Status` to be a 3-level factor of "Never Smoker", "Former Smoker", and "Current Smoker", handling the sick-quitter phenomenon effectively. As with the alcohol consumption variable, a categorical approach was also chosen here due to handling of the sick-quitter effect and not assuming a linear dose-response relationship. Unfortunately, there was no question that asked participants whether they had ever smoked in their life, meaning that "Never Smokers" were classified based on if they answered "No" to `SMQ020`.
-
-The process of engineering this variable was largely simple due to the structure of the smoking questionnaire not changing over different survey cycles. The first step was to assign those who answered "No" to `SMQ020` as "Never Smoker", as previously mentioned. Next, responses to `SMQ040` were used to distinguish between those who were former smokers and those who currently smoke. If the response to `SMQ020` or `SMQ040` was "Refused" or "Don't know", `Smoking_Status` was assigned as `NA` to be imputed. Finally, the factor levels of `Smoking_Status` were assigned, and the relevant columns of the data frame were chosen to lead into further data processing and imputation.
-
-#### Daily Hours of Sleep
-
-The final confounding variable to be engineered and included in the statistical modelling was average daily hours of sleep, which also has been shown in the surrounding literature to be associated with muscle mass and glycated haemoglobin @sleep_musc_2025 @sleep_gluc_2008. A minor harmonisation challenge arose as the variable name for the relevant question in the NHANES questionnaire changed across survey cycles. The question was recorded under the variable `SLD010H` in the 2011-2014 cycles and under `SLD012` in the 2015-2018 cycles. These were combined into a single, consistent `AvgNightlySleep` variable for the entire eight-year study period. The final variable was then cleaned to remove any special codes, and the final dataset was selected, removing any unnecessary columns.
-
-## Imputing Missing Data
-
-Following the extensive data processing and harmonisation outlined in the previous section, which addressed all identifiable structural missingness, a final analytical dataset was formed. Within this dataset, approximately 5% of the total data points remained missing across all variables. A naive approach to handling this issue - listwise deletion - was deemed inappropriate for two primary reasons. Although only 5% of the data was missing, conducting listwise deletion reduced the sample size by 35%, leading to a significant loss of statistical power. Secondly, this method is only valid under the strict and implausible assumption that the data are Missing Completely At Random (MCAR) @buuren. It is far more likely that in a complex health survey like NHANES, the data are Missing at Random (MAR), meaning the probability of a value being missing is related to other observed variables. Using listwise deletion on MAR data is known to introduce bias into the results.
-
-For these reasons, a more sophisticated strategy was required - multiple imputation. This method works by replacing the missing values with plausible estimates drawn from a distribution that is informed by all of the other variables in the dataset. The algorithm takes an incomplete dataset as input, and returns multiple complete datasets that are formed this way. In this analysis, multiple imputation was conducted using the `Amelia` package in R, with a generous number of 30 imputations to ensure statistical power and minimal bias.
-
-Before conducting the imputation, it was beneficial to define physiologically informed bounds of each variable to be imputed. This prevented the imputation algorithm from generating impossible values such as a negative waist circumference or age of 200. Parallel processing was also utilised when running the imputation algorithm. This allowed for the use of multiple CPU cores, vastly speeding up computation times. After imputation, there was a minor data processing task which involved calculating the ALMI primary predictor, creating the `Alcohol_Status` variable using the now complete `AvgDailyDrinks` and `LifetimeDrinkerFlag` variables, creating the `at_risk_or_worse` and `is_diabetic` outcome variables for the onset and progression models respectively, and removing variables that were no longer needed. This is was done for all 30 imputed datasets. See Section \ref{imp} for details on these processes.
-
-## Descriptive Analysis and Exploratory Visualisation
-
-Concise summaries and visualisations of the final analytical sample were then produced prior to model fitting. This was key to ensure robust understanding of the data before conducting the analysis.
-
-The first stage was to create a summary table that displayed the mean and standard deviation of all continuous variables, and the count and proportion of all categorical variables in the dataset. However, to ensure accuracy, it was important to consider the survey design and each of the 30 imputed datasets for this process.
-
-A custom function was used to obtain the relevant summary statistics from a single imputation, being sure to account for survey design using functions such as `svymean` and `svyvar` for survey-weighted means and variances respectively. This was applied to all imputations, and the results were stacked using the `map_df` function. The stacked results were then averaged to produce the final table.
-
-To supplement the descriptive statistics table, visualisations were created using `ggplot2` to show the distributions of the primary predictor (ALMI) and the continuous form of the outcome variables (HbA1c), as well as their unadjusted relationship. A custom theme was used to allow for visually appealing and concise plots, which was used for all other `ggplot2` graphics in the analysis.
-
-The distribution of ALMI and HbA1c were shown using density plots. Density curves from each of the 30 imputations were superimposed over each other, allowing the uncertainty introduced by the imputation algorithm to be visualised. For visual clarity, the scatter plot of the relationship between the variables used only imputation 1.
-
-## Statistical Model Fitting {#statmodelling}
-
-Statistical modelling was carried out following the completion of data processing and multiple imputation. As described in Section \ref{outcome}, this was achieved using a dual-model framework:
-
--   Onset models to investigate the transition from normal to elevated HbA1c.
--   Progression models to investigate the transition from a non-diabetic to a clinical diabetic state.
+description of models here including the survey methods used
 
 The use of the `survey` R package was key in fitting models that respected the survey design of the NHANES data. Prior to model fitting, the survey design of each of the 30 imputed datasets was specified using `svydesign`. Due to fitting models that respect the survey structure, the survey design object was supplied to the fitting functions rather than the raw datasets.
 
-### Modelling Strategy
+the initial modelling strategy was to use survey weighted ordinal logistic regression with the R function `svyolr`.
 
-Prior to the dual-model approach, the initial modelling strategy was to use survey weighted ordinal logistic regression with the R function `svyolr`. This method involved fitting models with a single categorical outcome variable rather than the dual-outcome approach with the outcome variables of `at_risk_or_worse` and `is_diabetic`. The outcome variable was a 3-level factor of the following categories:
-
-1.  Normal HbA1c ($<$ 5.7%)
-
-2.  Prediabetic HbA1c ($\geq$ 5.7% & $<$ 6.5%)
-
-3.  Diabetic HbA1c ($\geq$ 6.5%)
-
-This form of model attempted to predict the cumulative log odds of being at or below a certain step of the ordered outcome and how the predictors affect it. The key assumption that is associated with ordinal regression is that of proportional odds. The assumption is that the effect of any given predictor is the same across all the different thresholds of the outcome variable. This means that the effect of having more muscle (ALMI) on the odds of moving from "Normal" to "Prediabetic" should be the same as moving from "Prediabetic to "Diabetic".
-
-For the ordinal regression approach to be valid, the proportional odds assumption must be met. A formal test was conducted by fitting two separate binary logistic regression models: one comparing "Normal" vs. "Prediabetic" or "Diabetic" and a second comparing "Normal" or "Prediabetic" vs. "Diabetic". The results of this test revealed that the coefficients for key predictors, including ALMI, were significantly different between these two models. This violation was not merely a statistical issue; it provided direct evidence that the association between skeletal muscle and glycaemia is stage-specific. Therefore, the ordinal approach was abandoned as it could not adequately capture this complexity, necessitating the adoption of the final dual-model framework.
-
-The first application of the final binary classification modelling framework was using survey weighted generalised linear models with a quasi-Poisson family and log link function through the `svyglm` function in R. This approach is often favoured in epidemiological research as it allows for the direct estimation of prevalence ratios (or risk ratios), which can be more intuitive to interpret than odds ratios @zou_2004. However, goodness-of-fit diagnostic tests confirmed that onset models fit using the quasi-Poisson assumption were not well-defined, and did not fit the data well. The goodness-of-fit test used was the Archer-Lemeshow test - a specialised diagnostic tool for assessing the fit of binary classification models fitted using survey weighted data @archer_lemeshow_2006. More detail on this diagnostics process can be seen in Section \ref{diag}, in which the final models were thoroughly tested.
-
-Consequently, the quasi-Poisson approach was discarded in favour of the quasi-binomial approach, as this provided a stable, well-fitting model for both outcomes - a result later confirmed by goodness-of-fit testing. The results are therefore presented as odds ratios.
+quasi-binomial approach, as this provided a stable, well-fitting model for both outcomes - a result later confirmed by goodness-of-fit testing. The results are therefore presented as odds ratios.
 
 The complex multi-stage probability sampling design employed by NHANES, in particular the clustering of observations within PSUs, leads to a violation of the assumption of independence among observations inherent in standard GLMs. This intra-cluster correlation is known to produce apparent overdispersion, which, if left unaddressed, would result in badly defined standard errors @lumley_2011. The model fitting procedure followed by `svyglm` handles this overdispersion by using a design-based variance estimator (more on this later in this section). The use of "quasi" versions of the model family objects is used to simply avoid warnings in R regarding non-integer responses that occur due to survey weights - not to handle overdispersion, as is common when using unweighted GLMs. This is recommended in the documentation of the `survey` package.
 
@@ -318,51 +119,25 @@ The coefficients $\beta_1, \cdots, \beta_k$ are estimated using weighted estimat
 
 The variance of the estimated coefficients is computed using Horvitz–Thompson-type standard errors, which is a generalisation of the robust sandwich estimation procedure outlined by Zou in his 2004 article outlining the aforementioned Poisson-based approach for estimating risk ratios in epidemiological studies such as this @zou_2004 @lumley_2017. This is the design-based variance estimator. Unlike in an unweighted quasi-binomial GLM, this approach does not include scaling the variance by an estimated dispersion parameter, while still providing appropriate standard errors, confidence intervals, and p-values under the complex sampling design.
 
-### Stepwise Model Building {#stepwise}
+Stepwise regression
 
-To understand the influence of different confounders and select a final model for both the Onset and Progression outcomes, a hierarchical model-building approach was employed.
+The final model for the pre-diabetes outcome was chosen to contain only the confounders that, once added, changed the estimation of the ALMI coefficient by 10% or more @tenperc_2019. For the diabetes outcome, a different modelling strategy was planned, with the aim of providing a comprehensive adjustment for all potential confounders. XXXX Need to explain this here XXXX Details of this approach, along with the justification for why it differed from the Progression outcome, are provided in Section \ref{results}.
 
-This process involved fitting a sequence of ten nested models, where logical blocks of covariates were added at each step. The initial model of the sequence was crude and only contained the primary predictor (ALMI). Each successive model progressively adjusted for demographics, body composition, socio-economic status, and finally, all lifestyle factors.
+Models were fitted to each multiple imputed dataset and results combined using Rubin's rules.
 
-A critical aspect of this process was that it was applied across the multiply imputed data. Each of the ten models in the sequence were fitted to all 30 imputed datasets, and the results were pooled using Rubin's Rules by using the `MIcombine` function in R. This resulted in a single, robust set of coefficient estimates for each individual model definition.
+Model fit was assessed using Archer-Lemeshow goodness-of-fit tests. McFadden's Pseudo $\text{R}^2$ values compared the relative explanatory power of nested models. To further assess model validity, visualisations of binned residual plots were used. Outliers were explored using Cook's distance using the R function `svyCooksD`.
 
-This systematic model building strategy functioned as a sensitivity analysis, demonstrating how the ALMI coefficient responded to the inclusion of each confounding variable. To formally investigate the statistical mechanism behind these changes, particularly the multicollinearity between the three body composition variables, survey-weighted Variance Inflation Factor (VIF) values were calculated at key steps of the model-building process.
+Predictions from the final models were calculated and explored across the age range separately for males and females.
 
-The final model for the Progression outcome was chosen to contain only the confounders that, once added, changed the estimation of the ALMI coefficient by 10% or more @tenperc_2019. This provided a data-driven justification for selecting a parsimonious model that was both well-fitting and did not possess needless complexity. For the Onset outcome, a different modelling strategy was planned, with the aim of providing a comprehensive adjustment for all potential confounders. Details of this approach, along with the justification for why it differed from the Progression outcome, are provided in Section \ref{results}.
+K-fold cross-validation was used to assess model performance of the pre-diabetes model.
 
-## Model Diagnostics {#diag}
+XXXXX
 
-Following the selection of the final models, a suite of diagnostics tests were carried out to ensure each model was well-defined, robust, and suitable to make inferences from. Section \ref{diagcode} contains the code needed for the processes outlined in this section.
+Predictive accuracy of the models was assessed using unseen data.
 
-The first stage of this process was conducting Archer-Lemeshow goodness-of-fit tests. The test was run on each of 30 imputed datasets for a given model, and the results were pooled appropriately. The Archer-Lemeshow test outputs a single p-value to indicate goodness-of-fit. It is statistically invalid to simply average p-values across imputed datasets to obtain a single result for each model, in a similar way that combining model coefficients across imputations must be done using Rubin's rules to account for the within- and between-imputation variances. Therefore, a specific pooling procedure based on the test's F-statistic was required.
+### 
 
-For a given model, the F-statistic of the test for each of the 30 imputations was stored in a list. This list, along with the appropriate degrees of freedom, was then supplied to the `micombine.F` function, which viably pooled the test statistics and returned a single p-value that was used to assess the fit of a given pooled model. In this case, p-values larger than 0.05 indicated a good fit.
-
-To compare the relative explanatory power of the nested models, McFadden's Pseudo $\text{R}^2$ values were calculated. While not a direct analogue to $\text{R}^2$ in linear regression, it serves as a valuable metric for assessing the proportional reduction in model deviance, with values between 0.2 and 0.4 often considered to indicate an excellent fit @hensher_stopher_2021.
-
-A key technical consideration is that survey-weighted models fit using `svyglm` do not have a true likelihood and, consequently, no true deviance. The `fit.svyglm` function used in this analysis calculates the Pseudo $\text{R}^2$ by applying the un-weighted deviance formula to the weighted model formula @quasi_2019. Therefore, the resulting Pseudo $\text{R}^2$ should be interpreted as a heuristic for comparing relative model fit, rather than as an absolute measure of variance explained.
-
-McFadden's Pseudo $\text{R}^2$ was calculated for all 30 imputed datasets for each model, and the mean was taken to represent the final statistic for each pooled model. Simply averaging the $\text{R}^2$ values is argued to be more appropriate than pooling using methods such as Rubin's rules @mean_r_2019.
-
-To further assess model validity, visualisations of binned residual plots were used. This was only done using the final Onset and Progression models chosen using the methods outlined in Section \ref{stepwise}.
-
-Residual diagnostics are key in model evaluation to ensure that models are well-specified, and to discern whether higher order terms of the covariates are required. Standard residual plots are not useful in a logistic regression context due to the binary outcome variable. Binned residual plots overcome this by grouping observations into bins based on their predicted values and plotting the average residual vs average fitted value in each bin @binnedresids. Any clear systematic patterns, or too many points outside the $\pm 2$ standard error bounds, would indicate potential misclassification and warrant further testing. It is expected that around 95% of points should be contained within the $\pm 2$ standard error bounds.
-
-Linear predictor vs binned residuals plots were produced to assess overall model fit, and component-wise residual plots were produced to more accurately validate the assumption of linear continuous covariates. Due to the multiple imputation framework, linear predictor binned residual plots were produced for each of the 30 imputed datasets for the required two models. These plots were compared to identify any differences between imputations, from which it was discerned that none were significant. Therefore, component-wise residual plots were only formed using the first imputed dataset.
-
-As a final validation check, it was useful to investigate any significant outliers in the data to ensure that model conclusions were robust and not disproportionately influenced by a small number of unusual observations. The primary diagnostics tool for this was Cook's distance, which was calculated for the final models using the R function `svyCooksD` to correctly account for the complex survey design.
-
-The first stage of this test was to identify which observations were the most influential. This was done by finding those with the top 1% Cook's distance values from the final Onset and Progression models respectively. Due to residual diagnostics indicating no significant variation between imputations, this process was done only on the models fit to imputation 1. Next, these models were refit using redefined survey design objects formed using the first imputed dataset with these points removed. The coefficients from the original and refitted models were then compared to assess the stability of the findings.
-
-## Model Prediction {#modpreds}
-
-To aid in the interpretation of the primary identified associations, predicted probabilities were generated and plotted. The goal of this process was to clearly illustrate the shape and magnitude of the key associations of skeletal muscle and glycaemic control that were uncovered during the analysis, along with their surrounding uncertainty. Predictions were generated using the final parsimonious Progression model, allowing for a visual representation of the associations of ALMI and the probability of becoming diabetic. This was done separately for males and females due to previously discussed well-documented differences in hormonal profiles and body composition between the sexes.
-
-Predictions were initially made in the logit scale, and then converted back to the probability scale after the calculation of the confidence intervals. This was done to avoid incorrect calculations of negative confidence intervals.
-
-The initial step was to create a new dataset containing the covariate values for prediction. A sequence of evenly spaced ALMI values was selected from the observed minimum to maximum, continuous covariates such as age and body fat percentage were fixed at their means, and categorical variables, such as race, were set to their mode.
-
-To fully account for uncertainty due to missing data, continuous variables other than age were fixed at their means across all 30 imputed datasets. Age and race contained no missing values and were therefore assigned their values from the first imputation. Predictions were then generated across all 30 imputed datasets, with the final point estimate obtained as the mean of these predictions. Confidence intervals were constructed by combining the within- and between-imputation variances using Rubin's Rules, resulting in a total variance for interval estimation. The resulting mean predictions and confidence intervals were visualised using `ggplot2`. The code for the processes outlined in this section can be seen in Section \ref{predcode}.
+##  {#diag}
 
 ## Assessment of Predictive Accuracy (Cross-Validation) {#crossval}
 
