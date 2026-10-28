@@ -129,27 +129,7 @@ Model fit was assessed using Archer-Lemeshow goodness-of-fit tests. McFadden's P
 
 Predictions from the final models were calculated and explored across the age range separately for males and females.
 
-K-fold cross-validation was used to assess model performance of the pre-diabetes model.
-
-XXXXX
-
-Predictive accuracy of the models was assessed using unseen data.
-
-### 
-
-##  {#diag}
-
-## Assessment of Predictive Accuracy (Cross-Validation) {#crossval}
-
-The final stage of this analysis was to evaluate the predictive performance of the final parsimonious Progression model using k-fold cross-validation. While the primary objective of this study was explanatory rather than the development of a classification tool, this step provided an important assessment of the model’s generalisability by quantifying its performance on data not used in model fitting.
-
-Due to the computational complexity of running the procedure across all 30 imputed datasets, the cross-validation was conducted on the first imputed dataset as a representative sample. As residual diagnostics confirmed no significant differences between imputations, this is a valid approach.
-
-Although automated R packages for carrying out survey-weighted cross-validation are available, a custom algorithm was used to allow for improved flexibility and specific control of the process. The final validation involved 5-fold cross-validation repeated 10 times to ensure robust results and no dependency on the random allocation of the 5 folds.
-
-This procedure was only carried out using the Progression model outcome for reasons made clear in Section \ref{crossvalresults}.
-
-For each of the 10 repeats, the following stages were carried out for each fold:
+K-fold cross-validation was used to assess model performance of the pre-diabetes model. Due to the computational complexity of running the procedure across all 30 imputed datasets, the cross-validation was conducted on the first imputed dataset as a representative sample. A custom algorithm was used to allow for improved flexibility and specific control of the process. The final validation involved 5-fold cross-validation repeated 10 times to ensure robust results and no dependency on the random allocation of the 5 folds. For each of the 10 repeats, the following stages were carried out for each fold:
 
 1.  The dataset was partitioned into training and testing portions, with 80% allocated for training, and 20% for testing.
 2.  A survey design object was created using the training dataset, and was then used to fit a survey weighted logistic regression model using the same model specification as the final parsimonious Progression model.
@@ -159,17 +139,19 @@ For each of the 10 repeats, the following stages were carried out for each fold:
 
 The mean performance metrics from each repeat were averaged to produce the final estimates of the model's predictive performance. To further aid in the understanding of the procedure, the ROC curve from the final iteration of the cross-validation was plotted and labelled with the optimal threshold and AUC.
 
-# Results {#results}
+XXXXX
 
-This chapter will present the findings of the analytical processes outlined in the methodology. It will begin by providing a broad summary of the final analytical sample formed by the diligent data processing discussed in Section \ref{vars}, and then present the results of the hierarchical model building procedure that led to the choice of the final models. Inferences of the final models will then be presented, detailing the key findings that they have made possible. Finally, the results of model-based prediction and a thorough assessment of the predictive accuracy of the final parsimonious Progression model are shown.
+Predictive accuracy of the models was assessed using unseen data.
+
+# Results {#results}
 
 ## Descriptive Statistics of the Analytical Sample
 
-Once the raw data had been fully processed and all missing values had been imputed, the final analytical sample consisted of 12,178 participants between the ages of 18 and 59. The pooled, survey-weighted characteristics of the sample are presented in @tbl-desc.
+The final analytical sample consisted of 12,178 participants between the ages of 18 and 59. The pooled, survey-weighted characteristics of the sample are presented in @tbl-desc.
 
-The mean age of participants in the sample was 39 years (SD = 12.3), indicating a wide age distribution representative of the adult US population. 51.7% of the sample were female. The population was predominantly Non-Hispanic White (61.9%), with the second most populous group being Non-Hispanic Black (12.3%), and the remaining groups each comprising under 10% of the sample.
+Mean age was 39 years (SD = 12.3). 51.7% of the sample were female. The population was predominantly Non-Hispanic White (61.9%), with the second most populous group being Non-Hispanic Black (12.3%), and the remaining groups each comprising under 10% of the sample.
 
-The mean value of the primary predictor (ALMI) was 8.0 kg/m² (SD = 1.7), and the mean HbA1c was 5.5% (SD = 0.9). The distribution of the outcome variables for the Onset and Progression models showed that 76% of the population were in the normal healthy range of blood glucose levels, leaving 24% in the elevated range ($\geq$ 5.7%). In addition, 94% had HbA1c below the diabetic threshold, meaning 6% were in the range of clinical diabetes ($\geq$ 6.5%).
+Mean ALMI was 8.0 kg/m² (SD = 1.7), and mean HbA1c was 5.5% (SD = 0.9). The distribution of the outcome variables for the Onset and Progression models showed that 76% of the population were in the normal healthy range of blood glucose levels, leaving 24% in the elevated range ($\geq$ 5.7%). In addition, 94% had HbA1c below the diabetic threshold, meaning 6% were in the range of clinical diabetes ($\geq$ 6.5%).
 
 ```{r, echo=FALSE}
 #| label: tbl-desc
@@ -181,43 +163,19 @@ descriptive.tbl.kbl
 
 \FloatBarrier
 
-Body composition characteristics showed considerable variability, with a mean body fat percentage of 33.5% (SD = 8.7) and a mean waist circumference of 98.7 cm (SD = 17.4). The mean ratio of family income to poverty was 2.9 (SD = 1.7), reflecting a wide spectrum of socio-economic conditions across the sample.
+Mean body fat percentage was 33.5% (SD = 8.7) and mean waist circumference of 98.7 cm (SD = 17.4). The mean ratio of family income to poverty was 2.9 (SD = 1.7).
 
-Lifestyle factors also varied substantially. The mean Healthy Eating Index score was 52.6 (SD = 13.5), and the average nightly sleep was 7.2 hours (SD = 1.4). Of particular note, MVPA levels were highly skewed. While the mean was 164.3 minutes per day, the large standard deviation of 196.5 minutes indicates that many participants reported little to no activity, while a smaller number of highly active individuals significantly influenced the average.
+Mean Healthy Eating Index score was 52.6 (SD = 13.5), and mean nightly sleep was 7.2 hours (SD = 1.4).
 
 The vast majority of the cohort were classified as moderate drinkers, with this group containing 75.8% of the sample. Only 2.2% of participants were heavy drinkers, 10.6% were former drinkers, and 11.5% had never consumed an alcoholic beverage. The significant number of people in the "Former Drinker" category, namely 1291, highlights the importance of handling the sick-quitter bias. In contrast, the majority of individuals had never smoked cigarettes, with the "Never Smoker" category consisting of 60.6% of the population. 19.3% of people were former smokers, leaving 20.2% as current smokers.
 
 ## Visualisations of the Analytical Sample
 
-To further enhance the knowledge and understanding of the final analytical sample, the distributions of both the primary predictor (ALMI), the continuous form of the outcome (HbA1c), and the relationship between the can be seen below.
-
-```{r, echo=FALSE}
-#| label: fig-almiPlot
-#| fig-width: 12
-#| fig-cap: "A: Density distribution of Appendicular Lean Mass Index (ALMI) in the final analytical sample. Each blue line corresponds to the distribution of ALMI in each of the 30 imputed datasets. B: Density distribution of Glycated Haemoglobin (HbA1c) in the final analytical sample, also over each imputed dataset."
-
-combined.dens.plot <- musc.dens + gluc.dens + 
-  plot_annotation(tag_levels = 'A')
-
-combined.dens.plot
-```
-
-@fig-almiPlot shows the distribution of ALMI and HbA1c in each imputed dataset. The ALMI distribution is approximately normal and centred around 8.5 kg/m². There is very little variation in the distributions of different imputations, highlighting the low uncertainty introduced through the imputation process. The HbA1c distribution appears to be uni-modal and highly right-skewed, with the majority of the population clustered around a healthy range (around 5.2%). The very little variation across imputations is also evident here.
-
-```{r, echo=FALSE, message=FALSE}
-#| label: fig-almiGlucPlot
-#| out-width: "80%"
-#| fig-align: "center"
-#| fig-cap: "Scatter plot showing the relationship between ALMI and HbA1c in imputation 1 of the final analytical sample, stratified by gender. Points represent individual participants in the first imputed dataset. Solid lines represent the linear model trend line for each gender."
-
-gluc.musc.scat
-```
-
-Finally, @fig-almiGlucPlot illustrates the unadjusted relationship between ALMI and HbA1c in the first imputed dataset. The majority of points cluster around 5% HbA1c; however, many outliers exhibit very high HbA1c levels across a range of ALMI values, well above the 6.5% diabetic threshold. These are the cause of the right-skewed density plot of HbA1c in @fig-almiPlot. It is clear that on average, men have a higher ALMI than women, with most of the blue points clustered to the right of the red points. For both men and women, higher ALMI appears to be associated with higher HbA1c. This counter-intuitive observation will later be demonstrated to be an artefact of confounding.
+@fig-almiGlucPlot illustrates the unadjusted relationship between ALMI and HbA1c in the first imputed dataset. The majority of points cluster around 5% HbA1c; however, many outliers exhibit very high HbA1c levels across a range of ALMI values, well above the 6.5% diabetic threshold. These are the cause of the right-skewed density plot of HbA1c in @fig-almiPlot. It is clear that on average, men have a higher ALMI than women, with most of the blue points clustered to the right of the red points. For both men and women, higher ALMI appears to be associated with higher HbA1c. This counter-intuitive observation will later be demonstrated to be an artefact of confounding.
 
 ## Hierarchical Model Building and Key Findings
 
-The methodological and hierarchical model-building process, used to understand the influence of various confounding variables and choose robust final models for both the Onset and Progression outcomes, is summarised in @tbl-onsetsum and @tbl-progsum, respectively. These tables track the change in the ALMI coefficient, its odds ratio, and key model diagnostics as logical blocks of, and individual variables were sequentially added, allowing for a comprehensive understanding of why the final models were chosen. Each model is the result of pooling across all 30 imputations as outlined in Section \ref{stepwise}.
+The results of the sequential model fitting is summarised in @tbl-onsetsum and @tbl-progsum. Each model is the result of pooling across all 30 imputations as previously outline .
 
 ```{r, echo=FALSE}
 #| label: tbl-onsetsum
@@ -227,15 +185,7 @@ The methodological and hierarchical model-building process, used to understand t
 onset.summary.table.kbl
 ```
 
-The stepwise model-building of the Onset models summarised in @tbl-onsetsum illustrates how before adjusting for any confounders in the crude model, the odds ratio of ALMI was 1.288 with a 95% CI of \[1.237, 1.341\]. This implies that a 1 kg/m² increase in ALMI is associated with an increase in the odds of having elevated HbA1c by 29%. This result is counter-intuitive and comes as a result of a failure to control for confounding. The inclusion of the demographic variables and body fat percentage resulted in significant fluctuations of the ALMI coefficient, where significant is defined as a change larger than 10%; however, it still remained positive and statistically significant, resulting in an odds ratios larger than 1.
-
-In Model 4, once waist circumference was included, the ALMI coefficient became statistically insignificant, with its 95% CI including 0. The addition of further covariates up to the fully adjusted Model 10 did not change this, with ALMI remaining non-significant throughout. The loss of significance after including waist circumference suggests that the initial positive association may have reflected confounding by central adiposity. The earlier models (prior to Model 4) indicate that participants with higher muscle mass also tended to have other characteristics associated with higher risk, specifically larger waist circumference.
-
-The McFadden Pseudo $R^2$ values can be seen to increase throughout the stepwise process. The addition of the demographic variables resulted in its largest jump from 0.032 to 0.164. The fully adjusted Model 10 had a value of 0.195, meaning that even after comprehensive adjustment of all confounders, it still cannot be thought to have an "excellent" fit, as discussed in Section \ref{diag}. Importantly, the Archer-Lemeshow goodness-of-fit tests were non-significant for all ten models (all p \> 0.05), confirming that each model in the sequence fit the data well.
-
-The "Percentage Change in Coefficient" column demonstrates the sensitivity of the ALMI coefficient to the sequential addition of confounders. While the coefficient's estimate continued to change by more than 10% in subsequent models, this criterion is no longer a meaningful guide for selecting a parsimonious model, as the primary association had been fully attenuated. Since the effect of ALMI became statistically insignificant in Model 4 and remained so thereafter, the 10% rule was not used to select a final model for this outcome.
-
-The primary finding from the Onset modelling process is that ALMI is not significantly associated with glycaemic dysregulation. A final model must show that this result holds with appropriate confounder adjustment; therefore, the fully adjusted Model 10 was chosen in this case. Selecting the fully adjusted model ensures that the null association of ALMI with onset is robust to adjustment for all measured confounders.
+The primary finding from the Onset modelling process is that ALMI is not significantly associated with glycaemic dysregulation once waist circumference was inckuded.
 
 ```{r, echo=FALSE}
 #| label: tbl-progsum
@@ -245,15 +195,9 @@ The primary finding from the Onset modelling process is that ALMI is not signifi
 prog.summary.table.kbl
 ```
 
-The immediate difference between the results of the Onset and Progression outcomes is that in the Progression setting, seen in @tbl-progsum, the ALMI coefficient is statistically significant for every iteration of the model-building process. This implies that ALMI is associated with the transition to clinical diabetes; therefore, the goal was to select a final model that adjusts for confounding while avoiding unnecessary complexity. This will be done using the 10% rule. The final model can then be used to make a conclusive statement regarding the association of skeletal muscle with the odds of becoming diabetic.
-
-The paradoxical positive association seen in the crude Onset model (Model 1) also translates to the crude Progression model. Here, ALMI is associated with a 38.5% increase in the odds of becoming diabetic, seen from its coefficient of 1.385, with a 95% CI of \[1.312, 1.462\]. As also seen with the Onset models, this counter-intuitive finding persists after adjusting for key demographics and body fat percentage.
-
 Where the Progression models differ from the Onset models comes after the inclusion of waist circumference in Model 4. Where the Onset Model 4 saw the association for ALMI lose statistical significance, the Progression Model 4 results in its dramatic inversion to a statistically significant and protective odds ratio of 0.787, with a 95% CI of \[0.682, 0.907\]. This represents a -163.9% change in the coefficient, providing clear evidence of the strong confounding effect of waist circumference that was masking the true protective association of muscle mass in the simpler models.
 
-As further lifestyle and socio-economic confounders were added in Models 5 through 10, the odds ratio for ALMI remained stable and statistically significant, confirming the robustness of this protective association. After Model 4, the inclusion of further predictors did not change the coefficient for ALMI by more than $\pm$ 6.25%. The final, fully adjusted model (Model 10) yielded an odds ratio of 0.796.
-
-The McFadden's Pseudo $R^2$ values increased in a similar manner as they did throughout the Onset models, with the largest increase being from 0.044 to 0.157 from Model 1 to Model 2. However, from Model 4 onwards, they reached values of above 0.2, indicating an "excellent" fit. The Archer-Lemeshow goodness-of-fit tests were non-significant for all 10 models (p \> 0.05), meaning than every model was well-defined.
+As further lifestyle and socio-economic confounders were added in Models 5 through 10, the odds ratio for ALMI remained stable and statistically significant, confirming the robustness of this protective association.
 
 The final Progression model from which conclusions can be drawn from is Model 4. This is due to the ALMI coefficient changing by no more than \$\\pm\$ 6.25% after the inclusion of any further covariates, justifying the choice of Model 4 on the basis of parsimony. This model contains only the predictors that this analysis found to be significant confounders of the association of muscle and diabetic status. The odds ratio of ALMI in Model 4 can be used to infer that an increase in ALMI by 1 kg/m² is associated with a 21.3% reduction in the odds of progressing to diabetic levels of blood glucose.
 
@@ -284,17 +228,7 @@ The X-axis in @fig-almiCoeffPlot uses a logarithmic scale. This allows for the o
 
 ## Final Model Validation and Robustness Checks
 
-Residual diagnostics and influential point analyses are included to confirm the validity of the final models and ensure the robustness of their findings. All of the binned residual plots referenced in this section can be seen in \ref{residplots}.
-
-The binned residual plot in @fig-onsetResids show no significant patterns, with the majority of the residuals falling within the grey $\pm 2$ standard error boundaries. This indicates that the final Onset model was well-calibrated. In addition, there were no clear differences between the residuals of each imputation, meaning that the imputation strategy was robust.
-
-The component-wise binned residual plots for Onset Model 10 in @fig-onsetVarResids evidence that the assumptions of linear covariates in the model were justified. There are no clear curves in the residuals that would suggest higher order terms of covariates would provide significant advantages. The pattern of large residuals in the physical activity plot is likely a product of data sparsity at the extreme end of the distribution, and is not a cause for concern. Furthermore, there is fanning of the residuals, particularly in the plot for age; however, this is also not a concern, as the design-based standard error estimation employed by `svyglm` appropriately handles the potential overdispersion that these plots highlight. Only imputation 1 was used for these plots due to the previously discussed strong evidence of stability across imputations.
-
-In contrast, the residuals for the final Progression model, seen in @fig-progResids, seem to show a systematic pattern. For very low expected probability of progression to diabetes, there does not appear to be a clear pattern; however, the model seems to systematically underestimate the probability for individuals of low-to-moderate risk and overestimate it for those at very high risk. This provides evidence that the model may be miscalibrated, and that its use for specific probability estimation is not advised. The implications of this finding for the model's explanatory power will be addressed in the Section \ref{discuss}. Despite this, the residuals stay mostly within the grey $\pm 2$ standard error boundaries, although this does not alleviate the calibration concerns. Similarly to the onset model, the residuals remain consistent across imputations, providing further evidence that the imputation process was robust.
-
-Finally, the component-wise binned residual plots for Progression Model 4 in @fig-progVarResids suggest that the assumption of linear covariates is valid, with no systematic patterns visible in any plot. As was the case for the Onset component wise residual plots, these were formed using only imputation 1 due to the consistency over imputations.
-
-In addition to residual diagnostics, the influential points analysis are as follows: Both Onset Model 10 and Progression Model 4 were refit using reduced datasets that did not contain the observations that were in the top 1% of Cook's Distance of their original fits. The ALMI coefficient was still statistically insignificant in Onset Model 10, and in Progression Model 4, it was statistically significant and equal to -0.235, corresponding to an odds ratio of 0.79. This meant that the finding of both models are robust and are not driven by extreme outliers in the data.
+Residual diagnostics and influential point analyses were conducted with no concerns highlighted.
 
 ## Visualising the Association between ALMI and Diabetes {#visuals}
 
@@ -311,12 +245,6 @@ pred.plot
 
 This diagram clearly illustrates the strong protective association between skeletal muscle against the likelihood of becoming diabetic, with higher values of ALMI corresponding to lower predicted probabilities. The trend for both men and women is non-linear, with both curves demonstrating a shape similar to exponential decay. Women appear to have a higher probability of diabetes for all amounts of skeletal muscle, with the red mean prediction line always above the blue. However, for ALMI below approximately 5 kg/m² and above 10 kg/m², there is overlap of the confidence intervals between both genders, implying the probability differences between genders is less certain here. The red curve being steeper than the blue also suggests that the protective effects of skeletal muscle are perhaps stronger in women.
 
-The predicted probability at the lowest level of ALMI present in the data (2.1 kg/m²) was 0.1 for females and 0.04 for males; however, predictions made at lower levels of ALMI carry a high degree of uncertainty, highlighted by the large confidence intervals at these levels. This uncertainty is likely due to the lack of data in this range of ALMI. There were only 5 individuals with ALMI below 5 kg/m² in the first imputed dataset. This is assumed to not be significantly different across all other imputations.
-
-Conversely, for ALMI above around 5 kg/m², the confidence intervals are much narrower, meaning predictions here are much more precise. Across all imputed datasets, the mean value of ALMI for females was 7.2 kg/m², and was 9.0 kg/m² for men. The predicted probability of becoming diabetic for females at their mean ALMI was 0.03, and for men it was 0.007.
-
-While the data was also sparse for large ALMI (only 9 individuals had more than 15 kg/m²), the confidence intervals in this range maintain their restricted width. This is due to a mathematical property of probability. As the model's predicted probability of diabetes approaches its absolute floor of zero, the potential for variance is naturally compressed. Therefore, the confidence interval is forced to be narrow, as the lower bound is anchored near zero, and the upper bound is unable to significantly vary due to the already low point estimate.
-
 ## Cross-Validation Performance {#crossvalresults}
 
 This final subsection of the results will evaluate the findings of the cross-validation approach outlined in Section \ref{crossval} to determine Progression Model 4's generalisability and clinical usability for classification. This process was not carried out for Onset Model 10 due to the insignificance of ALMI in the model. These findings are summarised in @tbl-cvtable.
@@ -329,7 +257,7 @@ This final subsection of the results will evaluate the findings of the cross-val
 cv_summary_tbl_kbl
 ```
 
-Specifically, the table contains the mean of the mean performance metrics over each of the 10 repeats, as a way to concisely summarise the overall performance of the model. The most important statistic, the mean weighted AUC of 0.845, suggests that the model has high discriminatory power.
+The table contains the mean of the mean performance metrics over each of the 10 repeats. The mean weighted AUC of 0.845, suggests that the model has high discriminatory power.
 
 The mean optimal threshold of 0.055, although not a measure of model performance, is useful to be aware of. This means that on average, an observation was classified as diabetic if they were predicted a probability of either 0.055 or higher of being so. This threshold provided the optimal balance between sensitivity and specificity, resulting in the respective means of 81.39% and 72.55%. The mean overall weighted accuracy was 73.07%.
 
@@ -370,53 +298,25 @@ This finding provides population-level evidence that supports the mechanisms obs
 
 ## Strengths and Limitations
 
-To provide a thorough evaluation of these findings, it is important to highlight both the key strengths and potential limitations of the analysis. Key aspects of the data and methodological rigour supported the quality of the results. The large, survey-weighted NHANES sample provides nationally representative estimates, increasing reliability and generalisability. Additionally, body composition was measured using dual-energy X-ray absorptiometry (DXA), which offers greater accuracy and objectivity than alternative methods such as BIA @dxa_2020 @dxa_2022.
+The large, survey-weighted NHANES sample provides nationally representative estimates, increasing reliability and generalisability. Additionally, body composition was measured using dual-energy X-ray absorptiometry (DXA), which offers greater accuracy and objectivity than alternative methods such as BIA @dxa_2020 @dxa_2022.
 
-In addition to features of the NHANES sample itself, the sophisticated analytical processes used to leverage it were key. Surrounding literature was utilised to inform the choice of the appropriate outcome, predictor, and confounding variables, some of which underwent meticulous harmonisation due to changes in the NHANES survey structure across each cycle. This meant that each variable included in the modelling procedure was meaningful and contributed to the goal of finding final, well-defined models for each outcome variable.
+In addition to features of the NHANES sample itself, the sophisticated analytical processes employed are a strength as well as the approach to missing data handling and cross validation of results. The use of survey-weighted logistic regression models proved effective in isolating the stage-specific role of skeletal muscle both at the onset of dysglycaemia and during progression to clinical diabetes. Extending the analysis beyond simple coefficient inference was also a key strength.
 
-Further data processing, such as the handling of structural missingness as a result of survey skip patterns, was paramount. This made certain that no data was assumed missing when it was not, greatly improving the integrity of the sample. Following the completion of the final analytical sample, the robust multiple imputation strategy was a key strength. This ensured that the advantages of the large sample size were not lost due to the loss of a small proportion of data. Using physiologically informed bounds also guaranteed that all imputed data was realistic, further improving data integrity.
-
-The iterative modelling journey allowed for an intricate sensitivity analysis that resulted in the choice of the final models based on the significance of the primary predictor variable (ALMI), and how its coefficient changed when each confounding variable was included. Each model underwent goodness-of-fit diagnostics using the Archer-Lemeshow goodness-of-fit test for survey-weighted models to ensure they were well-defined, and their McFadden's Pseudo R² was also calculated to heuristically represent their respective explanatory power. In addition to these general diagnostics, further residual checks and influential point analyses were conducted on the final Onset and Progression models to provide added nuance into the quality of their fits.
-
-The use of survey-weighted logistic regression models proved effective in isolating the stage-specific role of skeletal muscle both at the onset of dysglycaemia and during progression to clinical diabetes. In particular, the final Progression model yielded a clear odds ratio that directly quantified the protective association of greater muscle mass against diabetes incidence. The methodological progression - from ordinal regression, to quasi-Poisson binary classification, and finally to quasi-binomial logistic regression - reflected both statistical rigour and close attention to the structure of the data.
-
-Extending the analysis beyond simple coefficient inference was a key strength. By using the final model to generate predictions of diabetes prevalence, the abstract statistical findings were translated into a clear, visual representation of the dose-response relationship between muscle mass and diabetes risk. This step quantifies the real-world magnitude of the protective association, making the findings more accessible and clinically relevant. The visualisation of the ALMI coefficient in Onset Model 10 and Progression Model 4 further improved the interpretability of the findings.
-
-Furthermore, the rigorous k-fold cross-validation provided a formal assessment of the generalisability of Progression Model 4. This process confirmed the model's high discriminatory power (AUC = 0.844) on unseen data, demonstrating that its findings are robust and not simply an artefact of overfitting the training sample. Together, these steps enhance the trustworthiness of the study's conclusions.
-
-Despite these strengths, it is crucial to interpret the findings of this analysis in the context of its potential limitations. The most significant of these is perhaps the cross-sectional nature of the NHANES data. Each data point corresponds to a separate individual at a specific point in time. A consequence of this data structure is that, while it is well-suited for identifying statistical associations, it does not allow these inferences to be extended to causal conclusions. Therefore, while this study demonstrates a strong protective association between muscle mass and the progression to diabetes, it cannot establish that increased muscle directly reduces risk.
-
-Another limitation is the potential miscalibration of the final Progression model, as indicated by residual diagnostics. The binned residual plot suggested a mild tendency for the model to under-predict diabetes risk at lower predicted probabilities and over-predict at higher predicted probabilities. Consequently, the absolute predicted probabilities presented in Section \ref{visuals} should be interpreted with caution, although the overall shape of the prediction curves is likely reliable.
-
-Importantly, while this calibration issue warrants caution for predictive applications, it is unlikely to invalidate the model's use for explanatory inference. The distinction between predictive calibration and explanatory inference is crucial: while the model may not be perfectly calibrated for prediction, the odds ratios can remain largely reliable estimates of the direction and strength of association. Component-wise residual diagnostics indicated no need for higher-order covariates, and cross-validated AUC values (\>0.8) demonstrate excellent discrimination. Therefore, the central conclusions regarding stage-specific, independent associations remain well-supported by the data despite the mild calibration issue.
-
-Other potential limitations include the potential for residual confounding despite the comprehensive adjustments made in the stepwise model building process. There likely exists other confounding variables that if included, may improve the models and make their findings even more robust. Examples of such may include unmeasured factors such as genetics or specific dietary patterns. The inclusion of further variables, or interactions between current ones, may improve the calibration issues seen from the residuals.
-
-Furthermore, many of the included lifestyle variables such as MVPA, alcohol consumption, and smoking habits are based on self-report, which is subject to recall bias. Unfortunately, this is unavoidable when including such variables; however, it is worth acknowledging. Another unavoidable limitation of using survey data is the inconsistency in questionnaire structure across survey cycles. Some of these inconsistencies were effectively addressed, as described in Section \ref{process}; however, some remained. For example, lifetime drinking status in the 2011–2016 cycles was assumed to be defined by whether an individual had consumed at least 12 alcoholic drinks in their lifetime, since no question asked about ever having a single drink, unlike in the 2017–2018 cycle. Additionally, the frequency of alcohol consumption in the 2017–2018 cycle was converted from a categorical to a continuous variable to align with the already continuous measure from the 2011–2016 cycles, which inevitably introduced some error due to the assumptions required.
+The most significant limitation is the cross-sectional nature of the NHANES data. A consequence of this data structure is that, while it is well-suited for identifying statistical associations, it does not allow these inferences to be extended to causal conclusions. Other potential limitations include the potential for residual confounding despite the comprehensive adjustments made in the stepwise model building process. Furthermore, many of the included lifestyle variables such as MVPA, alcohol consumption, and smoking habits are based on self-report, which is subject to recall bias. Another unavoidable limitation of using survey data is the inconsistency in questionnaire structure across survey cycles. Some of these inconsistencies were effectively addressed, as described in Section \ref{process}; however, some remained.
 
 ## Implications and Future Directions
 
-The implications of this research in the realm of public health are notable. The specific nuances involved in the mechanisms associated with the onset of dysglycaemia and progression to diabetes imply that a "one-size-fits-all" approach may be too simplistic.
+The specific nuances involved in the mechanisms associated with the onset of dysglycaemia and progression to diabetes imply that a "one-size-fits-all" approach may be too simplistic.
 
 In the early stages of increasing blood sugar, central adiposity possessed the primary independent association with increased risk, with this association also extending to the progression to diabetic HbA1c. Therefore, public health bodies should continue to emphasise the importance of improving diet and increasing general exercise, both of which contribute to reducing visceral fat storages. However, for individuals already categorised as pre-diabetic, added emphasis should be placed upon encouraging resistance training to maintain and/or increase muscle mass, due to this analysis showing that higher levels of skeletal muscle are associated with a reduction in the odds of progression to diabetes from a pre-diabetic state.
 
-From the lens of conducting further research on this topic, the results of this study highlight the importance of comprehensive body composition assessment. The inclusion of muscle mass, central fat, and overall fat in the statistical models is crucial to minimise the risk of obscuring or misinterpreting the true independent associations of each component.
-
-Future studies should extend the findings in this paper by investigating causality. The primary limitation of this study was the cross-sectional design of the data. Exploration of the documented associations in a longitudinal cohort study would have great clinical utility, and would provide stronger evidence that having greater muscle mass precedes a reduction in the risk of progressing from pre-diabetes to diabetes.
-
-Furthermore, if researchers seek to adapt Progression Model 4 as a clinical tool for risk stratification, due to potential calibration issue highlighted by its binned residual plot, recalibration techniques such as logistic recalibration or isotonic regression could be applied post-estimation to improve the accuracy of absolute risk predictions. Additionally, although component-wise residual diagnostics suggested that higher order covariates were not required, it may prove beneficial to explore more flexible modelling of the continuous predictors by using methods such as splines, as this may reduce subtle miscalibration.
+Future studies should extend the findings in this paper by investigating causality. T
 
 It would also be advantageous to explore how the findings evolve with the inclusion of additional, more detailed potential confounding variables - such as muscle quality in addition to muscle quantity, or genetic risk scores for diabetes - to examine potential interactions with body composition. Specific covariate interaction terms could also be included, as these may further improve the models.
 
 # Conclusion
 
-This dissertation sought to discover the independent and stage-specific role of skeletal muscle in glycaemic control. After a comprehensive analysis, it can be concluded that this role is indeed stage-specific. Higher skeletal muscle mass has a protective association against the progression to clinical diabetes. Specifically, it was found that a 1kg/m² increase in appendicular lean mass index was associated with approximately a 21.2% reduction in the odds of becoming diabetic. Conversely, it had no independent association with the initial onset of glycaemic dysregulation.
-
-The research began with the preliminary hypothesis that increases in skeletal muscle would be protective across all stages of glycaemic control. However, the initial results were unexpectedly illogical, suggesting that muscle mass possessed a harmful association across all stages. This prompted a more detailed investigation, which ultimately uncovered the true, nuanced, stage-specific relationship. When modelling for the onset of dysglycaemia, the inclusion of waist circumference as a confounding variable, and proxy for central adiposity, revealed the true null association of muscle mass. In contrast, when modelling the progression to diabetes, a two-component adjustment for both central adiposity and overall adiposity, proxied by body fat percentage, uncovered the aforementioned protective association. A comprehensive sensitivity analysis including adjustment for confounding variables of demographics and lifestyle factors as well as body composition, confirmed that the findings were robust and statistically valid. This process highlighted that the true nature of the associations are more intricate than initially hypothesised.
-
-Several recommendations for future research can be made on the basis of these findings. To extend the association results to inferences of causality, the analysis of longitudinal data is highly important. This would instill further confidence that skeletal muscle and glycaemic control are not spuriously correlated. All future modelling approaches should be sure to control for both central and overall adiposity so that their complex confounding relationship can be handled appropriately and results are not obscured. Furthermore, the addition of potential confounding variables not included in this analysis would allow for added insights into the underlying mechanisms, possibly leading to significant coefficient changes and more sophisticated models. The inclusion of higher orders of the included continuous covariates, or interaction terms, may also add statistically significant nuance to the findings. Finally, if the prediction of direct risk probabilities using the Progression models outlined in this analysis is relevant, recalibration techniques should be employed to improve their accuracy due to residual diagnostics suggesting slight miscalibration for this purpose, although their use for explanatory inference remains valid.
-
-This dissertation makes two key contributions to the fields of metabolic epidemiology and data science in health research. Clinically, it provides novel population-level evidence that the role of skeletal muscle in the control and regulation of blood glucose levels is stage-specific, quantifying this role at each stage. Methodologically, it highlights the critical importance of comprehensively adjusting for body composition in the statistical models, and that failure to do so may lead to misinterpretation of the true, independent role of skeletal muscle.
+This paper makes two key contributions to the fields of metabolic epidemiology . Clinically, it provides novel population-level evidence that the role of skeletal muscle in the control and regulation of blood glucose levels is stage-specific, quantifying this role at each stage. Methodologically, it highlights the critical importance of comprehensively adjusting for body composition in the statistical models, and that failure to do so may lead to misinterpretation of the true, independent role of skeletal muscle.
 
 # Appendices
 
